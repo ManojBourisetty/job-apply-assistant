@@ -12,6 +12,60 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_generations: {
+        Row: {
+          approved: boolean | null
+          created_at: string
+          id: string
+          input_summary: string | null
+          job_id: string | null
+          model: string
+          output: string | null
+          resume_version_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          approved?: boolean | null
+          created_at?: string
+          id?: string
+          input_summary?: string | null
+          job_id?: string | null
+          model: string
+          output?: string | null
+          resume_version_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          approved?: boolean | null
+          created_at?: string
+          id?: string
+          input_summary?: string | null
+          job_id?: string | null
+          model?: string
+          output?: string | null
+          resume_version_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_generations_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_generations_resume_version_id_fkey"
+            columns: ["resume_version_id"]
+            isOneToOne: false
+            referencedRelation: "resume_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       application_status_history: {
         Row: {
           application_id: string
@@ -53,6 +107,7 @@ export type Database = {
       applications: {
         Row: {
           checklist: Json
+          cover_letter_id: string | null
           created_at: string
           date_applied: string | null
           date_discovered: string
@@ -71,6 +126,7 @@ export type Database = {
         }
         Insert: {
           checklist?: Json
+          cover_letter_id?: string | null
           created_at?: string
           date_applied?: string | null
           date_discovered?: string
@@ -89,6 +145,7 @@ export type Database = {
         }
         Update: {
           checklist?: Json
+          cover_letter_id?: string | null
           created_at?: string
           date_applied?: string | null
           date_discovered?: string
@@ -106,6 +163,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "applications_cover_letter_id_fkey"
+            columns: ["cover_letter_id"]
+            isOneToOne: false
+            referencedRelation: "cover_letters"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "applications_job_id_fkey"
             columns: ["job_id"]
@@ -182,6 +246,101 @@ export type Database = {
           website?: string | null
         }
         Relationships: []
+      }
+      company_sponsorship_history: {
+        Row: {
+          changed_at: string
+          company_id: string
+          evidence: string | null
+          from_status: string | null
+          id: string
+          source: string | null
+          to_status: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          company_id: string
+          evidence?: string | null
+          from_status?: string | null
+          id?: string
+          source?: string | null
+          to_status: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          company_id?: string
+          evidence?: string | null
+          from_status?: string | null
+          id?: string
+          source?: string | null
+          to_status?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_sponsorship_history_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cover_letters: {
+        Row: {
+          approved: boolean
+          content: string
+          created_at: string
+          id: string
+          job_id: string
+          model: string | null
+          resume_version_id: string | null
+          tone: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          approved?: boolean
+          content: string
+          created_at?: string
+          id?: string
+          job_id: string
+          model?: string | null
+          resume_version_id?: string | null
+          tone?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          approved?: boolean
+          content?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          model?: string | null
+          resume_version_id?: string | null
+          tone?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cover_letters_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cover_letters_resume_version_id_fkey"
+            columns: ["resume_version_id"]
+            isOneToOne: false
+            referencedRelation: "resume_versions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       followups: {
         Row: {
@@ -415,6 +574,107 @@ export type Database = {
         }
         Relationships: []
       }
+      job_snapshots: {
+        Row: {
+          captured_at: string
+          closing_date: string | null
+          id: string
+          job_id: string
+          location: string | null
+          min_years_experience: number | null
+          presence: string
+          salary_max: number | null
+          salary_min: number | null
+          sponsorship_status: string | null
+          technologies: string[]
+          user_id: string
+          work_arrangement: string | null
+        }
+        Insert: {
+          captured_at?: string
+          closing_date?: string | null
+          id?: string
+          job_id: string
+          location?: string | null
+          min_years_experience?: number | null
+          presence?: string
+          salary_max?: number | null
+          salary_min?: number | null
+          sponsorship_status?: string | null
+          technologies?: string[]
+          user_id: string
+          work_arrangement?: string | null
+        }
+        Update: {
+          captured_at?: string
+          closing_date?: string | null
+          id?: string
+          job_id?: string
+          location?: string | null
+          min_years_experience?: number | null
+          presence?: string
+          salary_max?: number | null
+          salary_min?: number | null
+          sponsorship_status?: string | null
+          technologies?: string[]
+          user_id?: string
+          work_arrangement?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_snapshots_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_sources: {
+        Row: {
+          board_token: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_sync_error: string | null
+          last_sync_job_count: number | null
+          last_sync_status: string
+          last_synced_at: string | null
+          name: string
+          provider: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          board_token: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_sync_error?: string | null
+          last_sync_job_count?: number | null
+          last_sync_status?: string
+          last_synced_at?: string | null
+          name: string
+          provider: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          board_token?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_sync_error?: string | null
+          last_sync_job_count?: number | null
+          last_sync_status?: string
+          last_synced_at?: string | null
+          name?: string
+          provider?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           application_url: string | null
@@ -428,6 +688,7 @@ export type Database = {
           external_job_id: string | null
           id: string
           is_saved: boolean
+          job_source_id: string | null
           job_url: string | null
           last_verified_at: string | null
           location: string | null
@@ -463,6 +724,7 @@ export type Database = {
           external_job_id?: string | null
           id?: string
           is_saved?: boolean
+          job_source_id?: string | null
           job_url?: string | null
           last_verified_at?: string | null
           location?: string | null
@@ -498,6 +760,7 @@ export type Database = {
           external_job_id?: string | null
           id?: string
           is_saved?: boolean
+          job_source_id?: string | null
           job_url?: string | null
           last_verified_at?: string | null
           location?: string | null
@@ -529,7 +792,47 @@ export type Database = {
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "jobs_job_source_id_fkey"
+            columns: ["job_source_id"]
+            isOneToOne: false
+            referencedRelation: "job_sources"
+            referencedColumns: ["id"]
+          },
         ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       recruiters: {
         Row: {
@@ -586,6 +889,60 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resume_facts: {
+        Row: {
+          ai_generation_id: string | null
+          created_at: string
+          id: string
+          original_text: string | null
+          reasoning: string | null
+          resume_version_id: string
+          section: string
+          status: string
+          suggested_text: string
+          user_id: string
+        }
+        Insert: {
+          ai_generation_id?: string | null
+          created_at?: string
+          id?: string
+          original_text?: string | null
+          reasoning?: string | null
+          resume_version_id: string
+          section: string
+          status?: string
+          suggested_text: string
+          user_id: string
+        }
+        Update: {
+          ai_generation_id?: string | null
+          created_at?: string
+          id?: string
+          original_text?: string | null
+          reasoning?: string | null
+          resume_version_id?: string
+          section?: string
+          status?: string
+          suggested_text?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "resume_facts_ai_generation_id_fkey"
+            columns: ["ai_generation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_generations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "resume_facts_resume_version_id_fkey"
+            columns: ["resume_version_id"]
+            isOneToOne: false
+            referencedRelation: "resume_versions"
             referencedColumns: ["id"]
           },
         ]

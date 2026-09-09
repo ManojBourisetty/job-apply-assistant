@@ -18,7 +18,9 @@ import {
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { SidebarNav } from "./sidebar-nav";
 import { ThemeToggle } from "./theme-toggle";
+import { NotificationsBell } from "./notifications-bell";
 import { navItems } from "./nav-items";
+import type { Tables } from "@/lib/supabase/database.types";
 
 function initials(nameOrEmail: string) {
   const trimmed = nameOrEmail.trim();
@@ -31,9 +33,11 @@ function initials(nameOrEmail: string) {
 export function Topbar({
   userEmail,
   userName,
+  notifications,
 }: {
   userEmail: string;
   userName?: string | null;
+  notifications: Tables<"notifications">[];
 }) {
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
   const displayName = userName || userEmail;
@@ -62,6 +66,7 @@ export function Topbar({
         </SheetContent>
       </Sheet>
       <h1 className="flex-1 truncate text-sm font-semibold md:text-base">{title}</h1>
+      <NotificationsBell notifications={notifications} />
       <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

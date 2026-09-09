@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ExternalLink, ShieldCheck, Sparkles, ArrowLeft } from "lucide-react";
+import { ExternalLink, ShieldCheck, Sparkles, ArrowLeft, History } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
@@ -9,7 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SaveJobButton } from "@/components/jobs/save-job-button";
 import { JobActions } from "@/components/jobs/job-actions";
-import { formatDate, formatSalary, sponsorshipBadgeVariant, statusLabel } from "@/lib/format";
+import { MatchScoreCard } from "@/components/matching/match-score-card";
+import { computeMatch } from "@/lib/matching";
+import type { ResumeContent } from "@/lib/resume-types";
+import { formatDate, formatSalary, sponsorshipBadgeVariant, statusLabel, timeAgo } from "@/lib/format";
 
 export default async function JobDetailPage({
   params,
@@ -19,12 +22,43 @@ export default async function JobDetailPage({
   const { id } = await params;
   const supabase = await createClient();
 
-  const [{ data: job }, { data: application }] = await Promise.all([
+  const [{ data: job }, { data: application }, { data: snapshots }] = await Promise.all([
     supabase.from("jobs").select("*").eq("id", id).maybeSingle(),
     supabase.from("applications").select("id").eq("job_id", id).maybeSingle(),
+    supabase
+      .from("job_snapshots")
+      .select("captured_at, presence, location, work_arrangement, technologies")
+      .eq("job_id", id)
+      .order("captured_at", { ascending: false })
+      .limit(5),
   ]);
 
   if (!job) notFound();
+
+  const { data: masterResume } = await supabase
+    .from("resumes")
+    .select("current_version_id")
+    .eq("is_master", true)
+    .eq("status", "active")
+    .maybeSingle();
+
+  let resumeContent: ResumeContent | null = null;
+  if (masterResume?.current_version_id) {
+    const { data: version } = await supabase
+      .from("resume_versions")
+      .select("content")
+      .eq("id", masterResume.current_version_id)
+      .maybeSingle();
+    resumeContent = (version?.content as ResumeContent) ?? null;
+  }
+
+  const { data: activeProfiles } = await supabase
+    .from("job_search_profiles")
+    .select("*")
+    .eq("is_active", true)
+    .limit(1);
+
+  const match = resumeContent ? computeMatch(job, resumeContent, activeProfiles?.[0] ?? null) : null;
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -39,8 +73,14 @@ export default async function JobDetailPage({
         actions={<SaveJobButton jobId={job.id} isSaved={job.is_saved} />}
       />
 
-      <div className="mb-6">
+      <div className="mb-6 space-y-3">
         <JobActions jobId={job.id} hasApplication={!!application} />
+        {job.status === "closed" && (
+          <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+            This job may have closed — it was no longer listed on the source&apos;s career page during
+            the last sync. The historical record is kept below.
+          </div>
+        )}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -185,19 +225,42 @@ export default async function JobDetailPage({
             </CardContent>
           </Card>
 
-          <Card className="border-dashed">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-muted-foreground">
-                <Sparkles className="size-4" /> Match analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-muted-foreground">
-                AI-powered compatibility scoring against your master resume arrives in Phase 4, once
-                the job matching engine is built.
-              </p>
-            </CardContent>
-          </Card>
+          {match ? (
+            <MatchScoreCard match={match} />
+          ) : (
+            <Card className="border-dashed">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-muted-foreground">
+                  <Sparkles className="size-4" /> Match analysis
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">
+                  Create a master resume to see a transparent match score for this job.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {snapshots && snapshots.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="size-4" /> Change history
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                {snapshots.map((s, i) => (
+                  <div key={i} className="flex items-center justify-between">
+                    <span className="text-muted-foreground">
+                      {s.presence === "removed" ? "Removed from source listing" : "Snapshot captured"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">{timeAgo(s.captured_at)}</span>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>

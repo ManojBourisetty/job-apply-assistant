@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { sponsorshipBadgeVariant, statusLabel } from "@/lib/format";
+import { refreshReminderNotifications } from "@/lib/actions/reminders";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +33,8 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  await refreshReminderNotifications();
+
   const todayStart = new Date();
   todayStart.setHours(0, 0, 0, 0);
   const followupWindow = new Date(todayStart.getTime() + 3 * 86400000).toISOString().slice(0, 10);
@@ -43,6 +46,7 @@ export default async function DashboardPage() {
     { data: followupsDue },
     { data: recentJobs },
     { data: recentApplications },
+    { data: upcomingInterviews },
   ] = await Promise.all([
     supabase
       .from("jobs")
@@ -69,6 +73,13 @@ export default async function DashboardPage() {
       .from("applications")
       .select("id, status, updated_at, jobs(title, company_name)")
       .order("updated_at", { ascending: false })
+      .limit(5),
+    supabase
+      .from("interviews")
+      .select("id, stage, scheduled_at, application_id, applications(jobs(title, company_name))")
+      .eq("result", "pending")
+      .gte("scheduled_at", new Date().toISOString())
+      .order("scheduled_at", { ascending: true })
       .limit(5),
   ]);
 
@@ -184,6 +195,46 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {upcomingInterviews && upcomingInterviews.length > 0 && (
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle>Upcoming interviews</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {upcomingInterviews.map((interview) => {
+              const app = Array.isArray(interview.applications)
+                ? interview.applications[0]
+                : interview.applications;
+              const job = app && Array.isArray(app.jobs) ? app.jobs[0] : app?.jobs;
+              return (
+                <Link
+                  key={interview.id}
+                  href={`/applications/${interview.application_id}`}
+                  className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent/50"
+                >
+                  <div>
+                    <p className="text-sm font-medium">
+                      {statusLabel(interview.stage)} — {job?.company_name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{job?.title}</p>
+                  </div>
+                  {interview.scheduled_at && (
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(interview.scheduled_at).toLocaleString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                      })}
+                    </span>
+                  )}
+                </Link>
+              );
+            })}
+          </CardContent>
+        </Card>
+      )}
 
       <Card className="mt-6">
         <CardHeader>

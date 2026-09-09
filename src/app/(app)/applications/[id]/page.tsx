@@ -11,6 +11,7 @@ import { ApplicationStatusSelect } from "@/components/applications/application-s
 import { ApplicationChecklist } from "@/components/applications/application-checklist";
 import { ApplicationDetailsForm } from "@/components/applications/application-details-form";
 import { DeleteApplicationButton } from "@/components/applications/delete-application-button";
+import { InterviewSection } from "@/components/applications/interview-section";
 import { formatDate, sponsorshipBadgeVariant, statusLabel } from "@/lib/format";
 import type { ApplicationStatus } from "@/lib/constants";
 
@@ -32,11 +33,18 @@ export default async function ApplicationDetailPage({
 
   const job = Array.isArray(application.jobs) ? application.jobs[0] : application.jobs;
 
-  const { data: history } = await supabase
-    .from("application_status_history")
-    .select("from_status, to_status, changed_at")
-    .eq("application_id", id)
-    .order("changed_at", { ascending: false });
+  const [{ data: history }, { data: interviews }] = await Promise.all([
+    supabase
+      .from("application_status_history")
+      .select("from_status, to_status, changed_at")
+      .eq("application_id", id)
+      .order("changed_at", { ascending: false }),
+    supabase
+      .from("interviews")
+      .select("*")
+      .eq("application_id", id)
+      .order("scheduled_at", { ascending: true, nullsFirst: false }),
+  ]);
 
   return (
     <div className="mx-auto max-w-4xl">
@@ -71,6 +79,15 @@ export default async function ApplicationDetailPage({
             </CardHeader>
             <CardContent>
               <ApplicationDetailsForm application={application} />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Interviews</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <InterviewSection applicationId={application.id} interviews={interviews ?? []} />
             </CardContent>
           </Card>
 

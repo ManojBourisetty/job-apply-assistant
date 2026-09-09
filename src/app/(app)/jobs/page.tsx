@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Bookmark, Plus, Search as SearchIcon, ExternalLink } from "lucide-react";
+import { Bookmark, Plus, Radar, Search as SearchIcon, ExternalLink } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
@@ -36,6 +36,9 @@ export default async function JobsPage({
   const workArrangement = typeof params.work === "string" ? params.work : "";
   const sort = typeof params.sort === "string" ? params.sort : "recent";
   const page = Math.max(1, Number(params.page) || 1);
+  const showClosed = params.showClosed === "true";
+  const freshness = typeof params.freshness === "string" ? params.freshness : "";
+  const now = new Date();
 
   const supabase = await createClient();
 
@@ -52,6 +55,17 @@ export default async function JobsPage({
   }
   if (workArrangement) {
     query = query.eq("work_arrangement", workArrangement);
+  }
+  if (!showClosed) {
+    query = query.neq("status", "closed");
+  }
+  if (freshness) {
+    const hoursMap: Record<string, number> = { "24h": 24, "3d": 72, "7d": 168, "14d": 336, "30d": 720 };
+    const hours = hoursMap[freshness];
+    if (hours) {
+      const since = new Date(now.getTime() - hours * 3600000).toISOString();
+      query = query.gte("date_discovered", since);
+    }
   }
 
   if (sort === "oldest") {
@@ -74,6 +88,8 @@ export default async function JobsPage({
     if (sponsorship) next.set("sponsorship", sponsorship);
     if (workArrangement) next.set("work", workArrangement);
     if (sort !== "recent") next.set("sort", sort);
+    if (showClosed) next.set("showClosed", "true");
+    if (freshness) next.set("freshness", freshness);
     Object.entries(overrides).forEach(([k, v]) => {
       if (v === undefined) next.delete(k);
       else next.set(k, v);
@@ -89,14 +105,21 @@ export default async function JobsPage({
         description={
           saved
             ? "Jobs you've bookmarked for later review."
-            : "Jobs you've added manually. Automated discovery from company career pages and ATS feeds is coming in Phase 2."
+            : "Jobs discovered automatically from connected career pages, plus anything you've added manually."
         }
         actions={
-          <Button asChild>
-            <Link href="/jobs/new">
-              <Plus /> Add a job
-            </Link>
-          </Button>
+          <>
+            <Button variant="outline" asChild>
+              <Link href="/jobs/sources">
+                <Radar /> Job sources
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link href="/jobs/new">
+                <Plus /> Add a job
+              </Link>
+            </Button>
+          </>
         }
       />
 
@@ -132,6 +155,19 @@ export default async function JobsPage({
             ))}
           </SelectContent>
         </Select>
+        <Select name="freshness" defaultValue={freshness || "any"}>
+          <SelectTrigger className="w-[150px]">
+            <SelectValue placeholder="Freshness" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="any">Any time</SelectItem>
+            <SelectItem value="24h">Last 24 hours</SelectItem>
+            <SelectItem value="3d">Last 3 days</SelectItem>
+            <SelectItem value="7d">Last 7 days</SelectItem>
+            <SelectItem value="14d">Last 14 days</SelectItem>
+            <SelectItem value="30d">Last 30 days</SelectItem>
+          </SelectContent>
+        </Select>
         <Select name="sort" defaultValue={sort}>
           <SelectTrigger className="w-[150px]">
             <SelectValue />
@@ -142,6 +178,10 @@ export default async function JobsPage({
             <SelectItem value="title">Title A–Z</SelectItem>
           </SelectContent>
         </Select>
+        <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <input type="checkbox" name="showClosed" value="true" defaultChecked={showClosed} className="size-4" />
+          Show closed
+        </label>
         <Button type="submit" variant="secondary">
           Apply
         </Button>
@@ -162,9 +202,13 @@ export default async function JobsPage({
                     {job.work_arrangement ? ` · ${statusLabel(job.work_arrangement)}` : ""}
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {job.status === "closed" && <Badge variant="destructive">May have closed</Badge>}
                     <Badge variant={sponsorshipBadgeVariant(job.sponsorship_status)}>
                       Sponsorship: {statusLabel(job.sponsorship_status)}
                     </Badge>
+                    {job.source !== "manual" && (
+                      <Badge variant="outline">{statusLabel(job.source)}</Badge>
+                    )}
                     {formatSalary(job.salary_min, job.salary_max, job.salary_currency) && (
                       <Badge variant="outline">
                         {formatSalary(job.salary_min, job.salary_max, job.salary_currency)}
