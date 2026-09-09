@@ -1,6 +1,8 @@
 import type { GenerateTextOptions, GenerateTextResult } from "./types";
 
-const DEFAULT_MODEL = "claude-sonnet-4-5-20250929";
+// Bare current model ID — never a dated snapshot suffix, which gets retired.
+// Override via ANTHROPIC_MODEL (e.g. "claude-haiku-4-5" for the cheapest tier).
+const DEFAULT_MODEL = "claude-sonnet-5";
 
 export async function generateWithAnthropic(
   options: GenerateTextOptions
@@ -18,7 +20,11 @@ export async function generateWithAnthropic(
     body: JSON.stringify({
       model,
       max_tokens: options.maxTokens ?? 4096,
-      temperature: options.temperature ?? 0.4,
+      // Current models (Sonnet 5, Opus 5, ...) default to adaptive thinking,
+      // which rejects sampling params (temperature/top_p/top_k) with a 400 —
+      // so `temperature` is intentionally omitted rather than disabling
+      // thinking (disabling it on Opus-tier models can leak <thinking> tags
+      // into the visible text, which would corrupt the JSON parsing below).
       system: options.system,
       messages: options.messages.map((m) => ({ role: m.role, content: m.content })),
     }),
