@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useActionState } from "react";
-import { Loader2, Plus, Trash2, Sparkles, CheckCircle2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Sparkles, CheckCircle2, Wand2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -23,11 +23,17 @@ import {
 } from "@/lib/resume-types";
 import type { ActionState } from "@/lib/actions/resumes";
 
+const FACT_STATUS_LABEL: Record<FactStatus, string> = {
+  verified: "Verified",
+  user_added: "User added",
+  ai_reworded: "AI reworded",
+};
+
 function FactBadge({ status }: { status: FactStatus }) {
   return (
-    <Badge variant={status === "verified" ? "success" : "secondary"} className="shrink-0">
-      <CheckCircle2 className="size-3" />
-      {status === "verified" ? "Verified" : "User added"}
+    <Badge variant={status === "verified" ? "success" : status === "ai_reworded" ? "secondary" : "outline"} className="shrink-0">
+      {status === "ai_reworded" ? <Wand2 className="size-3" /> : <CheckCircle2 className="size-3" />}
+      {FACT_STATUS_LABEL[status]}
     </Badge>
   );
 }

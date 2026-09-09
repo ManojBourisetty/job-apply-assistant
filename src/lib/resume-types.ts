@@ -1,4 +1,4 @@
-export type FactStatus = "verified" | "user_added";
+export type FactStatus = "verified" | "user_added" | "ai_reworded";
 
 export type ResumeContact = {
   full_name: string;

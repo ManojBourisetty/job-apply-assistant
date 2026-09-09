@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Pencil, Trash2, Send, Wand2 } from "lucide-react";
+import { Pencil, Trash2, Send, Wand2, Mail } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -47,8 +47,15 @@ export function JobActions({
           </Link>
         </Button>
       )}
-      <Button size="sm" variant="outline" disabled title="Available in Phase 4">
-        <Wand2 /> Tailor resume
+      <Button size="sm" variant="outline" asChild>
+        <Link href={`/jobs/${jobId}/tailor`}>
+          <Wand2 /> Tailor resume
+        </Link>
+      </Button>
+      <Button size="sm" variant="outline" asChild>
+        <Link href={`/jobs/${jobId}/cover-letter`}>
+          <Mail /> Cover letter
+        </Link>
       </Button>
       <Button size="sm" variant="ghost" asChild>
         <Link href={`/jobs/${jobId}/edit`}>

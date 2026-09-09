@@ -13,6 +13,7 @@ import {
   BarChart3,
   Settings,
   Sliders,
+  Bot,
 } from "lucide-react";
 
 export type NavItem = {
@@ -34,5 +35,6 @@ export const navItems: NavItem[] = [
   { title: "Sponsorship Intelligence", href: "/sponsorship", icon: ShieldCheck },
   { title: "Recruiter Contacts", href: "/recruiters", icon: Users },
   { title: "Analytics", href: "/analytics", icon: BarChart3 },
+  { title: "Job Search Assistant", href: "/assistant", icon: Bot },
   { title: "Settings", href: "/settings", icon: Settings },
 ];
