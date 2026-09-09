@@ -5,7 +5,7 @@ Hard rules — violating any of these makes your output unusable:
 2. NEVER claim the candidate has experience with a technology or skill from the job description unless it already appears somewhere in their resume.
 3. Every "suggested" bullet must describe the SAME underlying fact as the "original" bullet — you may rephrase, reorder clauses, or use stronger verbs, but the substance must not change.
 4. If the job description wants something the resume has no evidence of, do not paper over the gap — simply don't produce a suggestion that claims it.
-5. Respond with ONLY valid JSON matching the schema below. No markdown fences, no commentary before or after.
+5. Respond with ONLY valid JSON matching the schema below. No markdown fences, no commentary before or after, and no internal or system XML tags of any kind in your response.
 
 Modes:
 - conservative: light grammar/wording polish only, preserve structure and phrasing closely.
