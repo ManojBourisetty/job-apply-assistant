@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { ToggleAdminButton } from "@/components/admin/toggle-admin-button";
 import { ToggleBlockButton } from "@/components/admin/toggle-block-button";
 import { AdminEditProfileForm } from "@/components/admin/edit-profile-form";
+import { EditCredentialsForm } from "@/components/admin/edit-credentials-form";
+import { isServiceRoleConfigured } from "@/lib/supabase/admin";
 
 export default async function AdminUserDetailPage({
   params,
@@ -175,6 +177,12 @@ export default async function AdminUserDetailPage({
           </CardContent>
         </Card>
       </div>
+
+      {isServiceRoleConfigured() && (
+        <div className="mt-6">
+          <EditCredentialsForm targetUserId={profile.id} currentEmail={profile.email ?? ""} />
+        </div>
+      )}
 
       <div className="mt-6">
         <AdminEditProfileForm profile={profile} />

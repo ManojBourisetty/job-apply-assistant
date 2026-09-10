@@ -4,8 +4,22 @@ import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type ActionState = { error?: string; success?: string };
+
+async function requireAdmin() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated.");
+
+  const { data: isAdmin } = await supabase.rpc("is_admin");
+  if (!isAdmin) throw new Error("Admin access required.");
+
+  return { supabase, user };
+}
 
 export async function setUserAdminStatus(targetUserId: string, isAdmin: boolean) {
   const supabase = await createClient();
@@ -150,4 +164,62 @@ export async function updateUserProfileAsAdmin(
 
   revalidatePath(`/admin/users/${targetUserId}`);
   return { success: "Profile updated." };
+}
+
+const updateEmailSchema = z.object({
+  email: z.string().email("Enter a valid email address."),
+});
+
+export async function updateUserEmailAsAdmin(
+  targetUserId: string,
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const parsed = updateEmailSchema.safeParse({ email: formData.get("email") });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+  }
+
+  const { supabase } = await requireAdmin();
+  const admin = createAdminClient();
+
+  // email_confirm: true — an admin setting this directly should take effect
+  // immediately, not wait on a confirmation link only the user can click.
+  const { error } = await admin.auth.admin.updateUserById(targetUserId, {
+    email: parsed.data.email,
+    email_confirm: true,
+  });
+  if (error) return { error: error.message };
+
+  // Keep the job_profiles display copy in sync with the real login email.
+  await supabase.from("job_profiles").update({ email: parsed.data.email }).eq("id", targetUserId);
+
+  revalidatePath(`/admin/users/${targetUserId}`);
+  revalidatePath("/admin/users");
+  return { success: "Email updated." };
+}
+
+const updatePasswordSchema = z.object({
+  password: z.string().min(8, "Password must be at least 8 characters."),
+});
+
+export async function setUserPasswordAsAdmin(
+  targetUserId: string,
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const parsed = updatePasswordSchema.safeParse({ password: formData.get("password") });
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+  }
+
+  await requireAdmin();
+  const admin = createAdminClient();
+
+  const { error } = await admin.auth.admin.updateUserById(targetUserId, {
+    password: parsed.data.password,
+  });
+  if (error) return { error: error.message };
+
+  return { success: "Password updated." };
 }
