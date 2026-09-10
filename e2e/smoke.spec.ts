@@ -46,6 +46,20 @@ test.describe("public pages render", () => {
   });
 });
 
+test.describe("mobile viewport", () => {
+  test.use({ viewport: { width: 375, height: 812 } });
+
+  for (const path of ["/login", "/signup", "/terms"]) {
+    test(`${path} has no horizontal overflow at 375px`, async ({ page }) => {
+      await page.goto(path);
+      const hasOverflow = await page.evaluate(
+        () => document.documentElement.scrollWidth > document.documentElement.clientWidth
+      );
+      expect(hasOverflow).toBe(false);
+    });
+  }
+});
+
 test.describe("graceful degradation", () => {
   test("a failed signup submission does not crash the app", async ({ page }) => {
     const pageErrors: string[] = [];

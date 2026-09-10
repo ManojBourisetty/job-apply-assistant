@@ -45,7 +45,7 @@ export function CoverLetterPanel({
   return (
     <Card>
       <CardContent className="space-y-4 pt-6">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Select value={tone} onValueChange={(v) => setTone(v as typeof tone)}>
             <SelectTrigger className="w-[160px]">
               <SelectValue />

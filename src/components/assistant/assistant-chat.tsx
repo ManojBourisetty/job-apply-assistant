@@ -42,7 +42,7 @@ export function AssistantChat() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-10rem)] flex-col">
+    <div className="flex h-[calc(100dvh-10rem)] flex-col">
       <Card className="flex-1 overflow-hidden">
         <CardContent className="flex h-full flex-col gap-4 overflow-y-auto pt-6">
           {messages.length === 0 && (

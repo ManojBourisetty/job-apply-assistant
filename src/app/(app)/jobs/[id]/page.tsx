@@ -89,7 +89,7 @@ export default async function JobDetailPage({
             <CardHeader>
               <CardTitle>Overview</CardTitle>
             </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-4 text-sm">
+            <CardContent className="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
               <div>
                 <p className="text-muted-foreground">Employment type</p>
                 <p className="font-medium">{statusLabel(job.employment_type)}</p>
@@ -121,7 +121,7 @@ export default async function JobDetailPage({
                 <p className="font-medium">{statusLabel(job.source)}</p>
               </div>
               {job.technologies.length > 0 && (
-                <div className="col-span-2">
+                <div className="sm:col-span-2">
                   <p className="mb-1.5 text-muted-foreground">Technologies</p>
                   <div className="flex flex-wrap gap-1.5">
                     {job.technologies.map((t) => (
@@ -132,7 +132,7 @@ export default async function JobDetailPage({
                   </div>
                 </div>
               )}
-              <div className="col-span-2 flex flex-wrap gap-2 pt-2">
+              <div className="sm:col-span-2 flex flex-wrap gap-2 pt-2">
                 {job.job_url && (
                   <Button variant="outline" size="sm" asChild>
                     <a href={job.job_url} target="_blank" rel="noopener noreferrer">
