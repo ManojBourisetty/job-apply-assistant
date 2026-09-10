@@ -34,10 +34,10 @@ export function VersionHistory({
   return (
     <div className="divide-y rounded-lg border">
       {versions.map((v) => (
-        <div key={v.id} className="flex items-center justify-between gap-4 p-4">
-          <div className="flex items-center gap-3">
-            <History className="size-4 text-muted-foreground" />
-            <div>
+        <div key={v.id} className="flex flex-wrap items-center justify-between gap-4 p-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <History className="size-4 shrink-0 text-muted-foreground" />
+            <div className="min-w-0">
               <p className="text-sm font-medium">
                 Version {v.version_number}
                 {v.id === currentVersionId && (
@@ -46,7 +46,7 @@ export function VersionHistory({
                   </Badge>
                 )}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="truncate text-xs text-muted-foreground">
                 {v.change_summary || "No summary"} · {formatDate(v.created_at)} ·{" "}
                 {v.created_by === "ai" ? "AI-suggested" : "You"}
               </p>

@@ -97,7 +97,7 @@ function Column({
   return (
     <div
       ref={setNodeRef}
-      className={`flex w-72 shrink-0 flex-col rounded-lg border bg-muted/30 ${
+      className={`flex w-[85vw] shrink-0 snap-start flex-col rounded-lg border bg-muted/30 sm:w-72 ${
         isOver ? "ring-2 ring-primary" : ""
       }`}
     >
@@ -161,7 +161,10 @@ export function KanbanBoard({ initialApplications }: { initialApplications: Kanb
       onDragEnd={handleDragEnd}
       onDragCancel={() => setActiveId(null)}
     >
-      <div className="flex gap-3 overflow-x-auto pb-4">
+      <p className="mb-2 text-xs text-muted-foreground sm:hidden">
+        Swipe sideways to see every stage →
+      </p>
+      <div className="flex snap-x snap-proximity gap-3 overflow-x-auto pb-4">
         {APPLICATION_STATUS_GROUPS.map((group) => (
           <Column
             key={group.id}

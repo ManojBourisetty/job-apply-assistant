@@ -371,7 +371,7 @@ export function ResumeEditor({
           </Card>
 
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
               <CardTitle>Skills</CardTitle>
               <Button type="button" variant="outline" size="sm" onClick={addSkillGroup}>
                 <Plus /> Add category
@@ -382,9 +382,9 @@ export function ResumeEditor({
                 <p className="text-sm text-muted-foreground">No skill categories yet.</p>
               )}
               {content.skills.map((group, idx) => (
-                <div key={idx} className="flex items-start gap-2">
+                <div key={idx} className="flex flex-col gap-2 sm:flex-row sm:items-start">
                   <Input
-                    className="w-40 shrink-0"
+                    className="w-full sm:w-40 sm:shrink-0"
                     value={group.category}
                     onChange={(e) =>
                       setContent((c) => {
@@ -395,37 +395,41 @@ export function ResumeEditor({
                     }
                     placeholder="Category"
                   />
-                  <Input
-                    value={group.items.join(", ")}
-                    onChange={(e) =>
-                      setContent((c) => {
-                        const skills = [...c.skills];
-                        skills[idx] = {
-                          ...skills[idx],
-                          items: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
-                        };
-                        return { ...c, skills };
-                      })
-                    }
-                    placeholder="AWS, Kubernetes, Terraform"
-                  />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon"
-                    onClick={() =>
-                      setContent((c) => ({ ...c, skills: c.skills.filter((_, i) => i !== idx) }))
-                    }
-                  >
-                    <Trash2 className="size-4" />
-                  </Button>
+                  <div className="flex min-w-0 flex-1 items-start gap-2">
+                    <Input
+                      className="min-w-0 flex-1"
+                      value={group.items.join(", ")}
+                      onChange={(e) =>
+                        setContent((c) => {
+                          const skills = [...c.skills];
+                          skills[idx] = {
+                            ...skills[idx],
+                            items: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
+                          };
+                          return { ...c, skills };
+                        })
+                      }
+                      placeholder="AWS, Kubernetes, Terraform"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() =>
+                        setContent((c) => ({ ...c, skills: c.skills.filter((_, i) => i !== idx) }))
+                      }
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </CardContent>
           </Card>
 
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
               <CardTitle>Experience</CardTitle>
               <Button type="button" variant="outline" size="sm" onClick={addExperience}>
                 <Plus /> Add position
@@ -596,6 +600,7 @@ export function ResumeEditor({
                       <div key={bIdx} className="flex items-center gap-2">
                         <FactBadge status={bullet.status} />
                         <Input
+                          className="min-w-0 flex-1"
                           value={bullet.text}
                           onChange={(e) =>
                             setContent((c) => {
@@ -611,6 +616,7 @@ export function ResumeEditor({
                           type="button"
                           variant="ghost"
                           size="icon"
+                          className="shrink-0"
                           onClick={() =>
                             setContent((c) => {
                               const experience = [...c.experience];
@@ -633,7 +639,7 @@ export function ResumeEditor({
           </Card>
 
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
               <CardTitle>Education</CardTitle>
               <Button type="button" variant="outline" size="sm" onClick={addEducation}>
                 <Plus /> Add education
@@ -722,7 +728,7 @@ export function ResumeEditor({
           </Card>
 
           <Card>
-            <CardHeader className="flex-row items-center justify-between">
+            <CardHeader className="flex-row flex-wrap items-center justify-between gap-2">
               <CardTitle>Certifications</CardTitle>
               <Button type="button" variant="outline" size="sm" onClick={addCertification}>
                 <Plus /> Add certification
