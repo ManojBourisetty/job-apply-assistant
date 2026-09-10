@@ -23,8 +23,16 @@ function PasswordForm() {
   return (
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+        <Label htmlFor="identifier">Email or username</Label>
+        <Input
+          id="identifier"
+          name="identifier"
+          type="text"
+          placeholder="you@example.com or jane_doe"
+          autoCapitalize="none"
+          autoCorrect="off"
+          required
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>

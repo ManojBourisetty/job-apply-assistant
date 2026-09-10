@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { usePathname } from "next/navigation";
-import { Menu, LogOut, User as UserIcon } from "lucide-react";
+import { Menu, LogOut, User as UserIcon, ShieldCheck } from "lucide-react";
 
 import { signOut } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
@@ -33,10 +33,12 @@ function initials(nameOrEmail: string) {
 export function Topbar({
   userEmail,
   userName,
+  isAdmin,
   notifications,
 }: {
   userEmail: string;
   userName?: string | null;
+  isAdmin?: boolean;
   notifications: Tables<"notifications">[];
 }) {
   const [mobileNavOpen, setMobileNavOpen] = React.useState(false);
@@ -84,6 +86,13 @@ export function Topbar({
               <UserIcon /> Settings
             </a>
           </DropdownMenuItem>
+          {isAdmin && (
+            <DropdownMenuItem asChild>
+              <a href="/admin">
+                <ShieldCheck /> Admin Portal
+              </a>
+            </DropdownMenuItem>
+          )}
           <DropdownMenuSeparator />
           <form action={signOut} className="w-full">
             <DropdownMenuItem asChild variant="destructive">

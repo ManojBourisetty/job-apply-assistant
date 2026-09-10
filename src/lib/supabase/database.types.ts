@@ -455,6 +455,7 @@ export type Database = {
           full_name: string | null
           github_url: string | null
           id: string
+          is_admin: boolean
           linkedin_url: string | null
           location: string | null
           notification_settings: Json
@@ -462,8 +463,11 @@ export type Database = {
           portfolio_url: string | null
           professional_summary: string | null
           target_titles: string[]
+          terms_accepted_at: string | null
+          terms_version: string | null
           theme: string
           updated_at: string
+          username: string | null
           years_experience: number | null
         }
         Insert: {
@@ -475,6 +479,7 @@ export type Database = {
           full_name?: string | null
           github_url?: string | null
           id: string
+          is_admin?: boolean
           linkedin_url?: string | null
           location?: string | null
           notification_settings?: Json
@@ -482,8 +487,11 @@ export type Database = {
           portfolio_url?: string | null
           professional_summary?: string | null
           target_titles?: string[]
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           theme?: string
           updated_at?: string
+          username?: string | null
           years_experience?: number | null
         }
         Update: {
@@ -495,6 +503,7 @@ export type Database = {
           full_name?: string | null
           github_url?: string | null
           id?: string
+          is_admin?: boolean
           linkedin_url?: string | null
           location?: string | null
           notification_settings?: Json
@@ -502,8 +511,11 @@ export type Database = {
           portfolio_url?: string | null
           professional_summary?: string | null
           target_titles?: string[]
+          terms_accepted_at?: string | null
+          terms_version?: string | null
           theme?: string
           updated_at?: string
+          username?: string | null
           years_experience?: number | null
         }
         Relationships: []
@@ -1053,7 +1065,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_email_for_username: {
+        Args: { p_username: string }
+        Returns: string
+      }
+      is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      username_available: {
+        Args: { p_username: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
