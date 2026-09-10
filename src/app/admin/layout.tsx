@@ -70,6 +70,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b bg-background/95 px-4 backdrop-blur supports-backdrop-filter:bg-background/60 md:hidden">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground"
+          >
+            <ArrowLeft className="size-4 shrink-0" />
+            App
+          </Link>
           <span className="font-semibold">Admin Portal</span>
           <nav className="ml-auto flex gap-3 text-sm">
             {ADMIN_NAV.map((item) => (
