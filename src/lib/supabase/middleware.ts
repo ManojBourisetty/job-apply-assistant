@@ -39,6 +39,18 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (user && !isPublicPath) {
+    const { data: blocked } = await supabase.rpc("is_blocked_self");
+    if (blocked) {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = "";
+      url.searchParams.set("blocked", "1");
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (user && (pathname === "/login" || pathname === "/signup")) {
     const url = request.nextUrl.clone();
     url.pathname = "/dashboard";

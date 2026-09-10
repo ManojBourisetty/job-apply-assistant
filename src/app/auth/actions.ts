@@ -38,7 +38,7 @@ const emailSchema = z.object({
 
 // Bump when the Terms/Privacy content materially changes, so acceptance
 // records stay tied to the version a user actually agreed to.
-const CURRENT_TERMS_VERSION = "2026-09-10";
+const CURRENT_TERMS_VERSION = "2026-09-10-v2";
 
 const GENERIC_LOGIN_ERROR = "Invalid email/username or password.";
 
@@ -81,6 +81,17 @@ export async function signInWithPassword(
 
   if (error) {
     return { error: GENERIC_LOGIN_ERROR };
+  }
+
+  const { data: blocked } = await supabase.rpc("is_blocked_self");
+  if (blocked) {
+    const { data: reason } = await supabase.rpc("get_my_block_reason");
+    await supabase.auth.signOut();
+    return {
+      error: reason
+        ? `Your account has been suspended: ${reason}. Contact the administrator.`
+        : "Your account has been suspended. Contact the administrator.",
+    };
   }
 
   redirect("/dashboard");

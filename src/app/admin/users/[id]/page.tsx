@@ -7,6 +7,9 @@ import { PageHeader } from "@/components/page-header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ToggleAdminButton } from "@/components/admin/toggle-admin-button";
+import { ToggleBlockButton } from "@/components/admin/toggle-block-button";
+import { AdminEditProfileForm } from "@/components/admin/edit-profile-form";
 
 export default async function AdminUserDetailPage({
   params,
@@ -15,6 +18,9 @@ export default async function AdminUserDetailPage({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const {
+    data: { user: currentUser },
+  } = await supabase.auth.getUser();
 
   const { data: profile } = await supabase
     .from("job_profiles")
@@ -62,8 +68,37 @@ export default async function AdminUserDetailPage({
       <PageHeader
         title={profile.full_name || profile.email || "User"}
         description={profile.username ? `@${profile.username} · ${profile.email}` : profile.email ?? undefined}
-        actions={profile.is_admin ? <Badge variant="secondary">Admin</Badge> : undefined}
+        actions={
+          <div className="flex items-center gap-2">
+            {profile.is_admin && <Badge variant="secondary">Admin</Badge>}
+            {profile.is_blocked && <Badge variant="destructive">Blocked</Badge>}
+            <ToggleAdminButton
+              userId={profile.id}
+              isAdmin={profile.is_admin}
+              isSelf={profile.id === currentUser?.id}
+            />
+            <ToggleBlockButton
+              userId={profile.id}
+              isBlocked={profile.is_blocked}
+              isSelf={profile.id === currentUser?.id}
+            />
+          </div>
+        }
       />
+
+      {profile.is_blocked && (
+        <Card className="mb-6 border-destructive/40">
+          <CardContent className="pt-6 text-sm">
+            <p className="font-medium text-destructive">This account is blocked.</p>
+            {profile.blocked_reason && <p className="mt-1">Reason: {profile.blocked_reason}</p>}
+            {profile.blocked_at && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                Blocked {new Date(profile.blocked_at).toLocaleString()}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
@@ -139,6 +174,10 @@ export default async function AdminUserDetailPage({
             )}
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-6">
+        <AdminEditProfileForm profile={profile} />
       </div>
 
       <div className="mt-6">

@@ -5,7 +5,7 @@ export const metadata = {
   title: "Terms of Service & Privacy Policy — JobPilot",
 };
 
-const LAST_UPDATED = "September 10, 2026";
+const LAST_UPDATED = "September 10, 2026 (v2 — added acceptable use & suspension terms)";
 
 export default function TermsPage() {
   return (
@@ -53,7 +53,26 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>3. What data we store</h2>
+          <h2>3. Acceptable use & account suspension</h2>
+          <p>You agree not to use JobPilot to:</p>
+          <ul>
+            <li>Submit spam, mass, or fraudulent job applications, or misuse job board data beyond personal job-search use.</li>
+            <li>Harass, deceive, or misrepresent yourself to recruiters, employers, or other users contacted through the platform.</li>
+            <li>Attempt to access another user&apos;s account or data, or interfere with the platform&apos;s normal operation.</li>
+            <li>Use the platform for any unlawful purpose.</li>
+          </ul>
+          <p className="mt-3">
+            If an administrator finds evidence of misconduct or a violation of these terms, they
+            may suspend (&quot;block&quot;) your account. A blocked account immediately loses
+            access to the platform and its data — this is enforced at the database level, not
+            just hidden in the app — until an administrator lifts the suspension. Where
+            practical, you will be shown the reason for the suspension and may contact the
+            administrator to dispute it or request reinstatement.
+          </p>
+        </section>
+
+        <section>
+          <h2>4. What data we store</h2>
           <p>To provide the service, JobPilot stores, on your behalf:</p>
           <ul>
             <li>Your profile information (name, contact details, career preferences).</li>
@@ -76,7 +95,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>4. AI features and your resume content</h2>
+          <h2>5. AI features and your resume content</h2>
           <p>
             If you use resume tailoring, cover-letter generation, or the job search assistant,
             the relevant text (e.g., your resume content and a job description) is sent to a
@@ -95,20 +114,20 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>5. Administrator access</h2>
+          <h2>6. Administrator access</h2>
           <p>
             This platform has an administrator role used to operate and support it. Administrators
             can see account-level information (such as email, username, signup date, and usage
             metrics) and, where necessary for support, the content of your job search data (resumes,
-            applications, jobs, etc.). Administrator access exists for platform management and
-            troubleshooting, not for unrelated purposes, and administrators do not have the ability
-            to submit applications, edit your resume content, or act on your account without your
-            request.
+            applications, jobs, etc.). Administrators can also edit basic profile details (such as
+            your name, username, or contact information) and, per Section 3, suspend an account for
+            misconduct — but do not have the ability to submit applications on your behalf, alter
+            your resume content, or otherwise act as you.
           </p>
         </section>
 
         <section>
-          <h2>6. Data retention & deletion</h2>
+          <h2>7. Data retention & deletion</h2>
           <p>
             Your data is retained for as long as your account is active. You may request deletion
             of your account and associated data at any time by contacting the platform
@@ -118,7 +137,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>7. Third-party services</h2>
+          <h2>8. Third-party services</h2>
           <p>This platform relies on the following third-party services to operate:</p>
           <ul>
             <li>
@@ -137,7 +156,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>8. Changes to these terms</h2>
+          <h2>9. Changes to these terms</h2>
           <p>
             If these terms change materially, you will be asked to review and accept the updated
             version the next time you sign in.
@@ -145,7 +164,7 @@ export default function TermsPage() {
         </section>
 
         <section>
-          <h2>9. Contact</h2>
+          <h2>10. Contact</h2>
           <p>
             Questions about this policy or your data can be directed to the platform
             administrator.

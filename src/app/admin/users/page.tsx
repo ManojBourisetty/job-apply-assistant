@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ToggleAdminButton } from "@/components/admin/toggle-admin-button";
+import { ToggleBlockButton } from "@/components/admin/toggle-block-button";
 
 export default async function AdminUsersPage() {
   const supabase = await createClient();
@@ -23,7 +24,7 @@ export default async function AdminUsersPage() {
 
   const { data: users } = await supabase
     .from("job_profiles")
-    .select("id, email, username, full_name, is_admin, created_at, terms_accepted_at")
+    .select("id, email, username, full_name, is_admin, is_blocked, created_at, terms_accepted_at")
     .order("created_at", { ascending: false });
 
   return (
@@ -43,6 +44,7 @@ export default async function AdminUsersPage() {
                 <TableHead>Signed up</TableHead>
                 <TableHead>Terms accepted</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead className="w-36" />
                 <TableHead className="w-36" />
               </TableRow>
             </TableHeader>
@@ -67,16 +69,26 @@ export default async function AdminUsersPage() {
                     )}
                   </TableCell>
                   <TableCell>
-                    {u.is_admin ? (
-                      <Badge variant="secondary">Admin</Badge>
-                    ) : (
-                      <Badge variant="outline">User</Badge>
-                    )}
+                    <div className="flex flex-wrap gap-1.5">
+                      {u.is_admin ? (
+                        <Badge variant="secondary">Admin</Badge>
+                      ) : (
+                        <Badge variant="outline">User</Badge>
+                      )}
+                      {u.is_blocked && <Badge variant="destructive">Blocked</Badge>}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <ToggleAdminButton
                       userId={u.id}
                       isAdmin={u.is_admin}
+                      isSelf={u.id === currentUser?.id}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <ToggleBlockButton
+                      userId={u.id}
+                      isBlocked={u.is_blocked}
                       isSelf={u.id === currentUser?.id}
                     />
                   </TableCell>

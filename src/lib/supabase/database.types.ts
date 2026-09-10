@@ -447,6 +447,9 @@ export type Database = {
       }
       job_profiles: {
         Row: {
+          blocked_at: string | null
+          blocked_by: string | null
+          blocked_reason: string | null
           created_at: string
           current_title: string | null
           digest_enabled: boolean
@@ -456,6 +459,7 @@ export type Database = {
           github_url: string | null
           id: string
           is_admin: boolean
+          is_blocked: boolean
           linkedin_url: string | null
           location: string | null
           notification_settings: Json
@@ -471,6 +475,9 @@ export type Database = {
           years_experience: number | null
         }
         Insert: {
+          blocked_at?: string | null
+          blocked_by?: string | null
+          blocked_reason?: string | null
           created_at?: string
           current_title?: string | null
           digest_enabled?: boolean
@@ -480,6 +487,7 @@ export type Database = {
           github_url?: string | null
           id: string
           is_admin?: boolean
+          is_blocked?: boolean
           linkedin_url?: string | null
           location?: string | null
           notification_settings?: Json
@@ -495,6 +503,9 @@ export type Database = {
           years_experience?: number | null
         }
         Update: {
+          blocked_at?: string | null
+          blocked_by?: string | null
+          blocked_reason?: string | null
           created_at?: string
           current_title?: string | null
           digest_enabled?: boolean
@@ -504,6 +515,7 @@ export type Database = {
           github_url?: string | null
           id?: string
           is_admin?: boolean
+          is_blocked?: boolean
           linkedin_url?: string | null
           location?: string | null
           notification_settings?: Json
@@ -518,7 +530,15 @@ export type Database = {
           username?: string | null
           years_experience?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "job_profiles_blocked_by_fkey"
+            columns: ["blocked_by"]
+            isOneToOne: false
+            referencedRelation: "job_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       job_search_profiles: {
         Row: {
@@ -1069,7 +1089,15 @@ export type Database = {
         Args: { p_username: string }
         Returns: string
       }
+      get_my_block_reason: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       is_admin: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
+      }
+      is_blocked_self: {
         Args: Record<PropertyKey, never>
         Returns: boolean
       }

@@ -66,7 +66,7 @@ function MagicLinkForm() {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ showBlockedBanner }: { showBlockedBanner?: boolean }) {
   return (
     <Card>
       <CardHeader>
@@ -74,6 +74,11 @@ export function LoginForm() {
         <CardDescription>Access your job search dashboard.</CardDescription>
       </CardHeader>
       <CardContent>
+        {showBlockedBanner && (
+          <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            Your account has been suspended. Contact the administrator.
+          </p>
+        )}
         <Tabs defaultValue="password">
           <TabsList className="w-full">
             <TabsTrigger value="password">Password</TabsTrigger>
