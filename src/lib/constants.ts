@@ -25,6 +25,7 @@ export const JOB_SOURCES = [
   "greenhouse",
   "lever",
   "ashby",
+  "adzuna",
   "workday",
   "other",
 ] as const;

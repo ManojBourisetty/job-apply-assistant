@@ -4,7 +4,9 @@ import { fetchAshbyJobs } from "./ashby";
 import type { AtsProvider, NormalizedJob } from "./types";
 
 export { AtsFetchError } from "./types";
-export type { NormalizedJob, AtsProvider } from "./types";
+export type { NormalizedJob, AtsProvider, AggregatorProvider } from "./types";
+export { fetchAdzunaJobs, isAdzunaConfigured, isAdzunaCountry } from "./adzuna";
+export type { AdzunaCountry } from "./adzuna";
 
 export async function fetchFromProvider(
   provider: AtsProvider,
