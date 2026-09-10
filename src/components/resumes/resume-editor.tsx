@@ -678,8 +678,9 @@ export function ResumeEditor({
 
       <div className="flex items-center justify-between rounded-lg border border-dashed p-4">
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Sparkles className="size-4" /> AI-assisted parsing &amp; tailoring arrive in Phase 4.
-          Every field above is truthfully yours — nothing here was invented.
+          <Sparkles className="size-4" /> AI tailoring is available per-job from a job&apos;s page
+          — it only rewords or reorders bullets you&apos;ve entered here, never invents new ones.
+          Pasted text above is a reference copy only; it doesn&apos;t auto-fill these fields yet.
         </p>
       </div>
 

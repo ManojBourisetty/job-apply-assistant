@@ -21,7 +21,7 @@ export default async function SearchProfilesPage() {
     <div>
       <PageHeader
         title="Job Search Profiles"
-        description="Save different search configurations so you don't rebuild filters every time. These will drive automated discovery in Phase 2."
+        description="Save different search configurations so you don't rebuild filters every time. Your active profile ranks jobs on the Recommended Jobs page and filters automated discovery."
         actions={
           <Button asChild>
             <Link href="/search-profiles/new">
