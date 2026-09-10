@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useActionState } from "react";
+import Link from "next/link";
 import { Loader2, Plus, Trash2, Sparkles, CheckCircle2, Wand2, ScanText, Upload } from "lucide-react";
 import { toast } from "sonner";
 
@@ -31,6 +32,48 @@ const FACT_STATUS_LABEL: Record<FactStatus, string> = {
   ai_reworded: "AI reworded",
   ai_extracted: "AI extracted",
 };
+
+// A comma-separated text input backed by a string[] value. A plain
+// controlled input whose value is `array.join(", ")` re-trims/re-splits on
+// every keystroke — if you've just typed a trailing space or comma (about
+// to start the next entry), that normalization strips it back out before
+// the next character lands, so words run together and separators vanish.
+// This keeps its own local text buffer and only resyncs from the external
+// array when that array changed for a reason other than its own last
+// onChange (e.g. an AI re-parse, or a sibling list item being removed).
+function TagsInput({
+  value,
+  onChange,
+  ...inputProps
+}: {
+  value: string[];
+  onChange: (values: string[]) => void;
+} & Omit<React.ComponentProps<typeof Input>, "value" | "onChange">) {
+  const [raw, setRaw] = React.useState(() => value.join(", "));
+  const [lastEmitted, setLastEmitted] = React.useState(value);
+
+  if (value !== lastEmitted && JSON.stringify(value) !== JSON.stringify(lastEmitted)) {
+    setLastEmitted(value);
+    setRaw(value.join(", "));
+  }
+
+  return (
+    <Input
+      {...inputProps}
+      value={raw}
+      onChange={(e) => {
+        const nextRaw = e.target.value;
+        setRaw(nextRaw);
+        const parsed = nextRaw
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+        setLastEmitted(parsed);
+        onChange(parsed);
+      }}
+    />
+  );
+}
 
 function FactBadge({ status }: { status: FactStatus }) {
   const variant =
@@ -373,17 +416,9 @@ export function ResumeEditor({
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label>Target titles (comma-separated)</Label>
-                <Input
-                  value={content.target_titles.join(", ")}
-                  onChange={(e) =>
-                    setContent((c) => ({
-                      ...c,
-                      target_titles: e.target.value
-                        .split(",")
-                        .map((s) => s.trim())
-                        .filter(Boolean),
-                    }))
-                  }
+                <TagsInput
+                  value={content.target_titles}
+                  onChange={(values) => setContent((c) => ({ ...c, target_titles: values }))}
                 />
               </div>
             </CardContent>
@@ -415,16 +450,13 @@ export function ResumeEditor({
                     placeholder="Category"
                   />
                   <div className="flex min-w-0 flex-1 items-start gap-2">
-                    <Input
+                    <TagsInput
                       className="min-w-0 flex-1"
-                      value={group.items.join(", ")}
-                      onChange={(e) =>
+                      value={group.items}
+                      onChange={(values) =>
                         setContent((c) => {
                           const skills = [...c.skills];
-                          skills[idx] = {
-                            ...skills[idx],
-                            items: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
-                          };
+                          skills[idx] = { ...skills[idx], items: values };
                           return { ...c, skills };
                         })
                       }
@@ -575,16 +607,13 @@ export function ResumeEditor({
                         })
                       }
                     />
-                    <Input
+                    <TagsInput
                       placeholder="Technologies (comma-separated)"
-                      value={exp.technologies.join(", ")}
-                      onChange={(e) =>
+                      value={exp.technologies}
+                      onChange={(values) =>
                         setContent((c) => {
                           const experience = [...c.experience];
-                          experience[idx] = {
-                            ...experience[idx],
-                            technologies: e.target.value.split(",").map((s) => s.trim()).filter(Boolean),
-                          };
+                          experience[idx] = { ...experience[idx], technologies: values };
                           return { ...c, experience };
                         })
                       }
@@ -835,7 +864,10 @@ export function ResumeEditor({
         </p>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-2">
+        <Button type="button" variant="outline" asChild>
+          <Link href="/resumes">Cancel</Link>
+        </Button>
         <Button type="submit" disabled={isPending}>
           {isPending && <Loader2 className="animate-spin" />}
           Save new version
