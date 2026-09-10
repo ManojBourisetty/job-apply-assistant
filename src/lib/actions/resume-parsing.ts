@@ -5,6 +5,7 @@ import { z } from "zod";
 import { generateText, isAiConfigured } from "@/lib/ai";
 import { RESUME_PARSING_SYSTEM_PROMPT } from "@/lib/ai/prompts";
 import { newId, type ResumeContent } from "@/lib/resume-types";
+import { calculateYearsExperience } from "@/lib/experience-duration";
 
 const MAX_RESUME_FILE_BYTES = 8 * 1024 * 1024;
 
@@ -184,6 +185,14 @@ export async function parseResumeText(
     education: parsed.education.map((edu) => ({ id: newId(), ...edu })),
     certifications: parsed.certifications.map((cert) => ({ id: newId(), ...cert })),
   };
+
+  // The AI is deliberately forbidden from computing years of experience
+  // (it's a derived number, not something "extracted" from text), so it's
+  // almost always null. Compute it ourselves from the experience dates it
+  // did extract — deterministic date math, not an AI guess.
+  if (content.years_experience === null) {
+    content.years_experience = calculateYearsExperience(content.experience);
+  }
 
   return { content };
 }

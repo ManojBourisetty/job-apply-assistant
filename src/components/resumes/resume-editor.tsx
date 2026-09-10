@@ -23,6 +23,7 @@ import {
 } from "@/lib/resume-types";
 import type { ActionState } from "@/lib/actions/resumes";
 import { parseResumeText, extractResumeFileText } from "@/lib/actions/resume-parsing";
+import { calculateYearsExperience } from "@/lib/experience-duration";
 
 const FACT_STATUS_LABEL: Record<FactStatus, string> = {
   verified: "Verified",
@@ -340,17 +341,35 @@ export function ResumeEditor({
               </div>
               <div className="space-y-2">
                 <Label>Years of experience</Label>
-                <Input
-                  type="number"
-                  step="0.5"
-                  value={content.years_experience ?? ""}
-                  onChange={(e) =>
-                    setContent((c) => ({
-                      ...c,
-                      years_experience: e.target.value ? Number(e.target.value) : null,
-                    }))
-                  }
-                />
+                <div className="flex gap-2">
+                  <Input
+                    type="number"
+                    step="0.5"
+                    value={content.years_experience ?? ""}
+                    onChange={(e) =>
+                      setContent((c) => ({
+                        ...c,
+                        years_experience: e.target.value ? Number(e.target.value) : null,
+                      }))
+                    }
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="shrink-0"
+                    onClick={() => {
+                      const calculated = calculateYearsExperience(content.experience);
+                      if (calculated === null) {
+                        toast.error("Add start/end dates to your experience entries first.");
+                        return;
+                      }
+                      setContent((c) => ({ ...c, years_experience: calculated }));
+                      toast.success(`Calculated ${calculated} years from your experience dates.`);
+                    }}
+                  >
+                    Calculate
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2 sm:col-span-2">
                 <Label>Target titles (comma-separated)</Label>
