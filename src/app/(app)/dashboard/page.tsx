@@ -157,7 +157,7 @@ export default async function DashboardPage() {
               <EmptyState
                 icon={Sparkles}
                 title="No jobs yet"
-                description="Add jobs manually today. Automated discovery from career pages and ATS feeds arrives in Phase 2."
+                description="Add jobs manually, or connect a company's Greenhouse/Lever/Ashby board under Job Sources for automated discovery."
                 action={
                   <Button asChild size="sm">
                     <Link href="/jobs/new">Add your first job</Link>
