@@ -104,14 +104,14 @@ export default async function AdminOverviewPage() {
               <p className="text-sm text-muted-foreground">No signups yet.</p>
             ) : (
               recentSignups.map((u) => (
-                <div key={u.id} className="flex items-center justify-between text-sm">
-                  <Link href={`/admin/users/${u.id}`} className="hover:underline">
+                <div key={u.id} className="flex items-center justify-between gap-4 text-sm">
+                  <Link href={`/admin/users/${u.id}`} className="min-w-0 truncate hover:underline">
                     <span className="font-medium">{u.full_name || u.username || u.email}</span>
                     <span className="ml-2 text-xs text-muted-foreground">
                       {u.username ? `@${u.username}` : u.email}
                     </span>
                   </Link>
-                  <div className="flex items-center gap-2">
+                  <div className="flex shrink-0 items-center gap-2">
                     {u.is_admin && (
                       <Badge variant="secondary" className="text-xs">
                         Admin
