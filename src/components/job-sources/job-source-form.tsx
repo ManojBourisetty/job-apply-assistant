@@ -1,5 +1,6 @@
 "use client";
 
+import * as React from "react";
 import { useActionState } from "react";
 import { Loader2 } from "lucide-react";
 
@@ -22,10 +23,14 @@ const PROVIDER_HINTS: Record<string, string> = {
   greenhouse: "The board token is the slug in boards.greenhouse.io/<token>",
   lever: "The board token is the slug in jobs.lever.co/<token>",
   ashby: "The board token is the slug in jobs.ashbyhq.com/<token>",
+  adzuna:
+    "Enter a 2-letter country code (us, gb, ca, au, de, fr, in, nl, sg, za). Adzuna searches using the job titles and location from your active Job Search Profile — add those first.",
 };
 
 export function JobSourceForm() {
   const [state, formAction, isPending] = useActionState(createJobSource, initialState);
+  const [provider, setProvider] = React.useState("greenhouse");
+  const isAdzuna = provider === "adzuna";
 
   return (
     <Card>
@@ -33,11 +38,16 @@ export function JobSourceForm() {
         <form action={formAction} className="grid gap-4 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="name">Display name *</Label>
-            <Input id="name" name="name" placeholder="e.g. Airbnb" required />
+            <Input
+              id="name"
+              name="name"
+              placeholder={isAdzuna ? "e.g. Adzuna – US" : "e.g. Airbnb"}
+              required
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="provider">Provider *</Label>
-            <Select name="provider" defaultValue="greenhouse">
+            <Select name="provider" defaultValue="greenhouse" onValueChange={setProvider}>
               <SelectTrigger id="provider" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -45,15 +55,19 @@ export function JobSourceForm() {
                 <SelectItem value="greenhouse">Greenhouse</SelectItem>
                 <SelectItem value="lever">Lever</SelectItem>
                 <SelectItem value="ashby">Ashby</SelectItem>
+                <SelectItem value="adzuna">Adzuna (job title search)</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="board_token">Board token *</Label>
-            <Input id="board_token" name="board_token" placeholder="airbnb" required />
-            <p className="text-xs text-muted-foreground">
-              {PROVIDER_HINTS.greenhouse} · {PROVIDER_HINTS.lever} · {PROVIDER_HINTS.ashby}
-            </p>
+            <Label htmlFor="board_token">{isAdzuna ? "Country code *" : "Board token *"}</Label>
+            <Input
+              id="board_token"
+              name="board_token"
+              placeholder={isAdzuna ? "us" : "airbnb"}
+              required
+            />
+            <p className="text-xs text-muted-foreground">{PROVIDER_HINTS[provider]}</p>
           </div>
           {state.error && <p className="text-sm text-destructive sm:col-span-2">{state.error}</p>}
           <div className="sm:col-span-2">

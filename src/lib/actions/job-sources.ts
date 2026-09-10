@@ -6,7 +6,15 @@ import { z } from "zod";
 
 import { createClient } from "@/lib/supabase/server";
 import { createNotification } from "@/lib/notifications";
-import { fetchFromProvider, AtsFetchError, type AtsProvider } from "@/lib/ats";
+import {
+  fetchFromProvider,
+  fetchAdzunaJobs,
+  isAdzunaConfigured,
+  isAdzunaCountry,
+  AtsFetchError,
+  type AtsProvider,
+  type NormalizedJob,
+} from "@/lib/ats";
 import { computeMatch } from "@/lib/matching";
 import type { ResumeContent } from "@/lib/resume-types";
 
@@ -14,7 +22,7 @@ export type ActionState = { error?: string; success?: string };
 
 const schema = z.object({
   name: z.string().min(1, "Name is required."),
-  provider: z.enum(["greenhouse", "lever", "ashby"]),
+  provider: z.enum(["greenhouse", "lever", "ashby", "adzuna"]),
   board_token: z.string().min(1, "Board token is required."),
 });
 
@@ -71,9 +79,56 @@ export async function syncJobSource(sourceId: string): Promise<SyncResult> {
   const { data: source } = await supabase.from("job_sources").select("*").eq("id", sourceId).single();
   if (!source) throw new Error("Source not found.");
 
-  let normalized;
+  let normalized: NormalizedJob[];
   try {
-    normalized = await fetchFromProvider(source.provider as AtsProvider, source.board_token);
+    if (source.provider === "adzuna") {
+      if (!isAdzunaConfigured()) {
+        throw new AtsFetchError(
+          "Adzuna is not configured. Set ADZUNA_APP_ID and ADZUNA_APP_KEY.",
+          "adzuna",
+          source.board_token
+        );
+      }
+      if (!isAdzunaCountry(source.board_token)) {
+        throw new AtsFetchError(
+          `"${source.board_token}" is not a supported Adzuna country code (e.g. us, gb, in, ca, au).`,
+          "adzuna",
+          source.board_token
+        );
+      }
+      const country = source.board_token;
+      const { data: profiles } = await supabase
+        .from("job_search_profiles")
+        .select("titles, locations")
+        .eq("user_id", user.id)
+        .eq("is_active", true)
+        .limit(1);
+      const profile = profiles?.[0];
+      if (!profile || profile.titles.length === 0) {
+        throw new AtsFetchError(
+          "Add at least one target job title to an active Job Search Profile before syncing Adzuna.",
+          "adzuna",
+          source.board_token
+        );
+      }
+      const results = await Promise.all(
+        profile.titles.map((title) =>
+          fetchAdzunaJobs({
+            country,
+            what: title,
+            where: profile.locations[0],
+          })
+        )
+      );
+      const seen = new Set<string>();
+      normalized = results.flat().filter((job) => {
+        if (seen.has(job.external_job_id)) return false;
+        seen.add(job.external_job_id);
+        return true;
+      });
+    } else {
+      normalized = await fetchFromProvider(source.provider as AtsProvider, source.board_token);
+    }
   } catch (err) {
     const message = err instanceof AtsFetchError ? err.message : "Sync failed unexpectedly.";
     await supabase
@@ -142,7 +197,7 @@ export async function syncJobSource(sourceId: string): Promise<SyncResult> {
         .insert({
           user_id: user.id,
           job_source_id: sourceId,
-          company_name: source.name,
+          company_name: job.company_name || source.name,
           title: job.title,
           external_job_id: job.external_job_id,
           job_url: job.job_url || null,
