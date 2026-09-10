@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
 
   const [{ data: profile }, { data: notifications }] = await Promise.all([
-    supabase.from("job_profiles").select("full_name").eq("id", user.id).maybeSingle(),
+    supabase.from("job_profiles").select("full_name, is_admin").eq("id", user.id).maybeSingle(),
     supabase
       .from("notifications")
       .select("*")
@@ -34,6 +34,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         <Topbar
           userEmail={user.email ?? ""}
           userName={profile?.full_name}
+          isAdmin={profile?.is_admin ?? false}
           notifications={notifications ?? []}
         />
         <main className="flex-1 p-4 md:p-6">{children}</main>

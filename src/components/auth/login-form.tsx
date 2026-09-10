@@ -23,8 +23,16 @@ function PasswordForm() {
   return (
     <form action={formAction} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" placeholder="you@example.com" required />
+        <Label htmlFor="identifier">Email or username</Label>
+        <Input
+          id="identifier"
+          name="identifier"
+          type="text"
+          placeholder="you@example.com or jane_doe"
+          autoCapitalize="none"
+          autoCorrect="off"
+          required
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
@@ -58,7 +66,7 @@ function MagicLinkForm() {
   );
 }
 
-export function LoginForm() {
+export function LoginForm({ showBlockedBanner }: { showBlockedBanner?: boolean }) {
   return (
     <Card>
       <CardHeader>
@@ -66,6 +74,11 @@ export function LoginForm() {
         <CardDescription>Access your job search dashboard.</CardDescription>
       </CardHeader>
       <CardContent>
+        {showBlockedBanner && (
+          <p className="mb-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            Your account has been suspended. Contact the administrator.
+          </p>
+        )}
         <Tabs defaultValue="password">
           <TabsList className="w-full">
             <TabsTrigger value="password">Password</TabsTrigger>

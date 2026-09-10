@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/reset-password"];
+const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/reset-password", "/terms"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -37,6 +37,18 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("redirectTo", pathname);
     return NextResponse.redirect(url);
+  }
+
+  if (user && !isPublicPath) {
+    const { data: blocked } = await supabase.rpc("is_blocked_self");
+    if (blocked) {
+      await supabase.auth.signOut();
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      url.search = "";
+      url.searchParams.set("blocked", "1");
+      return NextResponse.redirect(url);
+    }
   }
 
   if (user && (pathname === "/login" || pathname === "/signup")) {
