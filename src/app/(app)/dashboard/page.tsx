@@ -211,16 +211,16 @@ export default async function DashboardPage() {
                 <Link
                   key={interview.id}
                   href={`/applications/${interview.application_id}`}
-                  className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-accent/50"
+                  className="flex items-center justify-between gap-4 rounded-md px-2 py-1.5 hover:bg-accent/50"
                 >
-                  <div>
-                    <p className="text-sm font-medium">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium">
                       {statusLabel(interview.stage)} — {job?.company_name}
                     </p>
-                    <p className="text-xs text-muted-foreground">{job?.title}</p>
+                    <p className="truncate text-xs text-muted-foreground">{job?.title}</p>
                   </div>
                   {interview.scheduled_at && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="shrink-0 text-xs text-muted-foreground">
                       {new Date(interview.scheduled_at).toLocaleString("en-US", {
                         month: "short",
                         day: "numeric",
@@ -246,12 +246,12 @@ export default async function DashboardPage() {
               {recentApplications.map((a) => {
                 const job = Array.isArray(a.jobs) ? a.jobs[0] : a.jobs;
                 return (
-                  <div key={a.id} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                    <div>
-                      <p className="text-sm font-medium">{job?.title}</p>
-                      <p className="text-xs text-muted-foreground">{job?.company_name}</p>
+                  <div key={a.id} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium">{job?.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">{job?.company_name}</p>
                     </div>
-                    <Badge variant="outline">{statusLabel(a.status)}</Badge>
+                    <Badge variant="outline" className="shrink-0">{statusLabel(a.status)}</Badge>
                   </div>
                 );
               })}

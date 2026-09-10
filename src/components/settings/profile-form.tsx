@@ -90,8 +90,8 @@ export function ProfileForm({ profile }: { profile: Tables<"job_profiles"> | nul
         <CardHeader>
           <CardTitle>Notifications</CardTitle>
         </CardHeader>
-        <CardContent className="flex items-center justify-between">
-          <div>
+        <CardContent className="flex items-center justify-between gap-4">
+          <div className="min-w-0">
             <Label htmlFor="digest_enabled">Daily digest email</Label>
             <p className="text-xs text-muted-foreground">
               Sending requires an email integration — arriving in a later phase.
