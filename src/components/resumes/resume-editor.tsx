@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useActionState } from "react";
-import { Loader2, Plus, Trash2, Sparkles, CheckCircle2, Wand2 } from "lucide-react";
+import { Loader2, Plus, Trash2, Sparkles, CheckCircle2, Wand2, ScanText, Upload } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -22,17 +22,25 @@ import {
   newId,
 } from "@/lib/resume-types";
 import type { ActionState } from "@/lib/actions/resumes";
+import { parseResumeText, extractResumeFileText } from "@/lib/actions/resume-parsing";
 
 const FACT_STATUS_LABEL: Record<FactStatus, string> = {
   verified: "Verified",
   user_added: "User added",
   ai_reworded: "AI reworded",
+  ai_extracted: "AI extracted",
 };
 
 function FactBadge({ status }: { status: FactStatus }) {
+  const variant =
+    status === "verified" ? "success" : status === "user_added" ? "outline" : "secondary";
   return (
-    <Badge variant={status === "verified" ? "success" : status === "ai_reworded" ? "secondary" : "outline"} className="shrink-0">
-      {status === "ai_reworded" ? <Wand2 className="size-3" /> : <CheckCircle2 className="size-3" />}
+    <Badge variant={variant} className="shrink-0">
+      {status === "ai_reworded" || status === "ai_extracted" ? (
+        <Wand2 className="size-3" />
+      ) : (
+        <CheckCircle2 className="size-3" />
+      )}
       {FACT_STATUS_LABEL[status]}
     </Badge>
   );
@@ -42,19 +50,77 @@ export function ResumeEditor({
   action,
   initialContent,
   initialRawText,
+  aiConfigured,
 }: {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   initialContent: ResumeContent;
   initialRawText?: string | null;
+  aiConfigured: boolean;
 }) {
   const [content, setContent] = React.useState<ResumeContent>(initialContent);
   const [rawText, setRawText] = React.useState(initialRawText ?? "");
+  const [activeTab, setActiveTab] = React.useState("structured");
+  const [isParsing, setIsParsing] = React.useState(false);
+  const [isUploading, setIsUploading] = React.useState(false);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [state, formAction, isPending] = useActionState(action, {});
 
   React.useEffect(() => {
     if (state.success) toast.success(state.success);
     if (state.error) toast.error(state.error);
   }, [state]);
+
+  async function parseTextIntoFields(text: string) {
+    const result = await parseResumeText(text);
+    if ("error" in result) {
+      toast.error(result.error);
+      return false;
+    }
+    setContent((c) => ({ ...result.content, target_titles: c.target_titles }));
+    setActiveTab("structured");
+    toast.success("Parsed — review every field below, then save when it looks right.");
+    return true;
+  }
+
+  async function handleParseWithAi() {
+    setIsParsing(true);
+    try {
+      await parseTextIntoFields(rawText);
+    } catch {
+      toast.error("Couldn't parse resume text. Try again.");
+    } finally {
+      setIsParsing(false);
+    }
+  }
+
+  async function handleFileUpload(file: File) {
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      formData.set("file", file);
+      const extracted = await extractResumeFileText(formData);
+      if ("error" in extracted) {
+        toast.error(extracted.error);
+        return;
+      }
+      setRawText(extracted.text);
+      if (aiConfigured) {
+        setIsParsing(true);
+        try {
+          await parseTextIntoFields(extracted.text);
+        } finally {
+          setIsParsing(false);
+        }
+      } else {
+        setActiveTab("raw");
+        toast.success("Text extracted — copy it into the structured fields manually.");
+      }
+    } catch {
+      toast.error("Couldn't read that file. Try a different PDF or DOCX export.");
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   function updateContact<K extends keyof ResumeContent["contact"]>(key: K, value: string) {
     setContent((c) => ({ ...c, contact: { ...c.contact, [key]: value } }));
@@ -110,7 +176,45 @@ export function ResumeEditor({
       <input type="hidden" name="raw_text" value={rawText} />
       <input type="hidden" name="change_summary" value="Manual edit" />
 
-      <Tabs defaultValue="structured">
+      <Card>
+        <CardContent className="flex flex-col items-start gap-3 pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-medium">Upload a resume file</p>
+            <p className="text-xs text-muted-foreground">
+              PDF or DOCX.{" "}
+              {aiConfigured
+                ? "Text is extracted and AI-parsed into the fields below automatically."
+                : "Text is extracted, but configure an AI provider to auto-fill the fields."}
+            </p>
+          </div>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.docx"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+              e.target.value = "";
+            }}
+          />
+          <Button
+            type="button"
+            variant="outline"
+            disabled={isUploading || isParsing}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            {isUploading || isParsing ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Upload />
+            )}
+            {isUploading ? "Reading file…" : isParsing ? "Parsing…" : "Upload resume"}
+          </Button>
+        </CardContent>
+      </Card>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
           <TabsTrigger value="structured">Structured resume</TabsTrigger>
           <TabsTrigger value="raw">Pasted text</TabsTrigger>
@@ -121,13 +225,35 @@ export function ResumeEditor({
             <CardHeader>
               <CardTitle>Pasted resume text</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-3">
               <Textarea
                 rows={16}
                 value={rawText}
                 onChange={(e) => setRawText(e.target.value)}
-                placeholder="Paste your raw resume text here as a reference copy. Structured fields on the other tab power matching and tailoring."
+                placeholder="Paste your raw resume text here."
               />
+              {aiConfigured ? (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={handleParseWithAi}
+                  disabled={isParsing || !rawText.trim()}
+                >
+                  {isParsing ? <Loader2 className="animate-spin" /> : <ScanText />}
+                  Parse with AI
+                </Button>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Configure an AI provider to auto-extract this into structured fields, or fill
+                  them in manually on the other tab.
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Parsing only extracts what&apos;s in your text above — it never invents
+                companies, dates, or bullets — and only fills the Structured resume tab once you
+                click the button. Nothing saves until you click &quot;Save new version&quot;
+                below.
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

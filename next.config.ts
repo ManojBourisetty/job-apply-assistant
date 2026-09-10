@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  experimental: {
+    serverActions: {
+      // Default 1MB is too small for a resume PDF/DOCX upload.
+      bodySizeLimit: "8mb",
+    },
+  },
 };
 
 export default nextConfig;

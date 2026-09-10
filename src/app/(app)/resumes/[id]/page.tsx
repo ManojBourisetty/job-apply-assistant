@@ -9,6 +9,7 @@ import { VersionHistory } from "@/components/resumes/version-history";
 import { DownloadResumeButton } from "@/components/resumes/download-resume-button";
 import { saveResumeVersion } from "@/lib/actions/resumes";
 import { emptyResumeContent, type ResumeContent } from "@/lib/resume-types";
+import { isAiConfigured } from "@/lib/ai";
 
 export default async function ResumeDetailPage({
   params,
@@ -66,6 +67,7 @@ export default async function ResumeDetailPage({
             action={saveResumeVersion.bind(null, id)}
             initialContent={content}
             initialRawText={currentVersion?.raw_text}
+            aiConfigured={isAiConfigured()}
           />
         </TabsContent>
         <TabsContent value="history" className="pt-4">
