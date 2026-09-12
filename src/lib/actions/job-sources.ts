@@ -104,21 +104,44 @@ export async function syncJobSource(sourceId: string): Promise<SyncResult> {
         .eq("is_active", true)
         .limit(1);
       const profile = profiles?.[0];
-      if (!profile || profile.titles.length === 0) {
+
+      let titles: string[] = profile?.titles ?? [];
+      let where: string | undefined = profile?.locations[0];
+
+      // No active Job Search Profile with titles set — fall back to the
+      // master resume's own "Target titles" field rather than blocking the
+      // sync, since a user may have set one there without realizing Job
+      // Search Profiles is a separate feature.
+      if (titles.length === 0) {
+        const { data: masterResume } = await supabase
+          .from("resumes")
+          .select("current_version_id")
+          .eq("user_id", user.id)
+          .eq("is_master", true)
+          .eq("status", "active")
+          .maybeSingle();
+        if (masterResume?.current_version_id) {
+          const { data: version } = await supabase
+            .from("resume_versions")
+            .select("content")
+            .eq("id", masterResume.current_version_id)
+            .maybeSingle();
+          const content = version?.content as ResumeContent | undefined;
+          titles = content?.target_titles ?? [];
+          where = where || content?.contact.location || undefined;
+        }
+      }
+
+      if (titles.length === 0) {
         throw new AtsFetchError(
-          "Add at least one target job title to an active Job Search Profile before syncing Adzuna.",
+          "Add at least one target job title — either in an active Job Search Profile (Search Profiles page) or your master resume's \"Target titles\" field — before syncing Adzuna.",
           "adzuna",
           source.board_token
         );
       }
+
       const results = await Promise.all(
-        profile.titles.map((title) =>
-          fetchAdzunaJobs({
-            country,
-            what: title,
-            where: profile.locations[0],
-          })
-        )
+        titles.map((title) => fetchAdzunaJobs({ country, what: title, where }))
       );
       const seen = new Set<string>();
       normalized = results.flat().filter((job) => {
