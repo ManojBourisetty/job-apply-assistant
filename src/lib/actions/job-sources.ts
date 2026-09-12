@@ -11,7 +11,7 @@ export type ActionState = { error?: string; success?: string };
 
 const schema = z.object({
   name: z.string().min(1, "Name is required."),
-  provider: z.enum(["greenhouse", "lever", "ashby", "adzuna"]),
+  provider: z.enum(["greenhouse", "lever", "ashby", "adzuna", "workday"]),
   board_token: z.string().min(1, "Board token is required."),
 });
 

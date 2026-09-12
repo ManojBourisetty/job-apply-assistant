@@ -17,7 +17,7 @@ export type NormalizedJob = {
   technologies: string[];
 };
 
-export type AtsProvider = Extract<JobSource, "greenhouse" | "lever" | "ashby">;
+export type AtsProvider = Extract<JobSource, "greenhouse" | "lever" | "ashby" | "workday">;
 export type AggregatorProvider = Extract<JobSource, "adzuna">;
 
 export class AtsFetchError extends Error {

@@ -34,8 +34,9 @@ export function JobSourceRow({ source }: { source: Tables<"job_sources"> }) {
           <p className="font-medium">{source.name}</p>
           <Badge variant="outline">{statusLabel(source.provider)}</Badge>
         </div>
-        <p className="text-xs text-muted-foreground">
-          {source.provider === "adzuna" ? "Country" : "Token"}: {source.board_token}
+        <p className="truncate text-xs text-muted-foreground" title={source.board_token}>
+          {source.provider === "adzuna" ? "Country" : source.provider === "workday" ? "URL" : "Token"}:{" "}
+          {source.board_token}
         </p>
         <div className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
           <StatusIcon
