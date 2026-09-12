@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/sync-job-sources",
       "schedule": "0 13 * * *"
+    },
+    {
+      "path": "/api/cron/sync-job-sources",
+      "schedule": "0 6 * * *"
     }
   ]
 }
