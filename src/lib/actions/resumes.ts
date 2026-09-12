@@ -165,3 +165,35 @@ export async function restoreResumeVersion(resumeId: string, versionId: string) 
   if (error) throw new Error(error.message);
   revalidatePath(`/resumes/${resumeId}`);
 }
+
+export async function deleteResumeVersion(resumeId: string, versionId: string) {
+  const supabase = await createClient();
+
+  const [{ data: resume }, { data: versions }] = await Promise.all([
+    supabase.from("resumes").select("current_version_id").eq("id", resumeId).single(),
+    supabase
+      .from("resume_versions")
+      .select("id, version_number")
+      .eq("resume_id", resumeId)
+      .order("version_number", { ascending: false }),
+  ]);
+
+  if (!versions || versions.length <= 1) {
+    throw new Error("Can't delete the only version — every resume needs at least one.");
+  }
+
+  const { error } = await supabase.from("resume_versions").delete().eq("id", versionId);
+  if (error) throw new Error(error.message);
+
+  if (resume?.current_version_id === versionId) {
+    const nextCurrent = versions.find((v) => v.id !== versionId);
+    if (nextCurrent) {
+      await supabase
+        .from("resumes")
+        .update({ current_version_id: nextCurrent.id })
+        .eq("id", resumeId);
+    }
+  }
+
+  revalidatePath(`/resumes/${resumeId}`);
+}
