@@ -24,13 +24,23 @@ const PROVIDER_HINTS: Record<string, string> = {
   lever: "The board token is the slug in jobs.lever.co/<token>",
   ashby: "The board token is the slug in jobs.ashbyhq.com/<token>",
   adzuna:
-    "Enter a 2-letter country code (us, gb, ca, au, de, fr, in, nl, sg, za). Adzuna searches using the job titles and location from your active Job Search Profile — add those first.",
+    "Enter a 2-letter country code (us, gb, ca, au, de, fr, in, nl, sg, za). Adzuna searches using the job titles from an active Job Search Profile, or your master resume's Target titles if you haven't set one up — add at least one first.",
 };
 
 export function JobSourceForm() {
   const [state, formAction, isPending] = useActionState(createJobSource, initialState);
   const [provider, setProvider] = React.useState("greenhouse");
+  const [boardToken, setBoardToken] = React.useState("");
   const isAdzuna = provider === "adzuna";
+
+  function handleProviderChange(value: string) {
+    setProvider(value);
+    // Helpful default, not forced — only fill it in if the field is still
+    // empty, so we never clobber something the user already typed.
+    if (value === "adzuna" && boardToken === "") {
+      setBoardToken("us");
+    }
+  }
 
   return (
     <Card>
@@ -47,7 +57,7 @@ export function JobSourceForm() {
           </div>
           <div className="space-y-2">
             <Label htmlFor="provider">Provider *</Label>
-            <Select name="provider" defaultValue="greenhouse" onValueChange={setProvider}>
+            <Select name="provider" defaultValue="greenhouse" onValueChange={handleProviderChange}>
               <SelectTrigger id="provider" className="w-full">
                 <SelectValue />
               </SelectTrigger>
@@ -65,6 +75,8 @@ export function JobSourceForm() {
               id="board_token"
               name="board_token"
               placeholder={isAdzuna ? "us" : "airbnb"}
+              value={boardToken}
+              onChange={(e) => setBoardToken(e.target.value)}
               required
             />
             <p className="text-xs text-muted-foreground">{PROVIDER_HINTS[provider]}</p>
