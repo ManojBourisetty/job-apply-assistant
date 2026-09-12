@@ -555,46 +555,57 @@ export function ResumeEditor({
                         })
                       }
                     />
-                    <Input
-                      type="month"
-                      value={exp.start_date}
-                      onChange={(e) =>
-                        setContent((c) => {
-                          const experience = [...c.experience];
-                          experience[idx] = { ...experience[idx], start_date: e.target.value };
-                          return { ...c, experience };
-                        })
-                      }
-                    />
-                    <div className="flex items-center gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs font-normal text-muted-foreground">
+                        Start date
+                      </Label>
                       <Input
                         type="month"
-                        value={exp.end_date}
-                        disabled={exp.is_current}
+                        value={exp.start_date}
                         onChange={(e) =>
                           setContent((c) => {
                             const experience = [...c.experience];
-                            experience[idx] = { ...experience[idx], end_date: e.target.value };
+                            experience[idx] = { ...experience[idx], start_date: e.target.value };
                             return { ...c, experience };
                           })
                         }
                       />
-                      <label className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                        <Checkbox
-                          checked={exp.is_current}
-                          onCheckedChange={(checked) =>
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs font-normal text-muted-foreground">
+                        End date
+                      </Label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                          type="month"
+                          className="min-w-0 flex-1"
+                          value={exp.end_date}
+                          disabled={exp.is_current}
+                          onChange={(e) =>
                             setContent((c) => {
                               const experience = [...c.experience];
-                              experience[idx] = {
-                                ...experience[idx],
-                                is_current: checked === true,
-                              };
+                              experience[idx] = { ...experience[idx], end_date: e.target.value };
                               return { ...c, experience };
                             })
                           }
                         />
-                        Current
-                      </label>
+                        <label className="flex shrink-0 items-center gap-1.5 text-sm text-muted-foreground">
+                          <Checkbox
+                            checked={exp.is_current}
+                            onCheckedChange={(checked) =>
+                              setContent((c) => {
+                                const experience = [...c.experience];
+                                experience[idx] = {
+                                  ...experience[idx],
+                                  is_current: checked === true,
+                                };
+                                return { ...c, experience };
+                              })
+                            }
+                          />
+                          Current
+                        </label>
+                      </div>
                     </div>
                     <Input
                       placeholder="Employment type (e.g. Full-time)"
@@ -721,28 +732,36 @@ export function ResumeEditor({
                       })
                     }
                   />
-                  <Input
-                    type="month"
-                    value={edu.start_date}
-                    onChange={(e) =>
-                      setContent((c) => {
-                        const education = [...c.education];
-                        education[idx] = { ...education[idx], start_date: e.target.value };
-                        return { ...c, education };
-                      })
-                    }
-                  />
-                  <Input
-                    type="month"
-                    value={edu.end_date}
-                    onChange={(e) =>
-                      setContent((c) => {
-                        const education = [...c.education];
-                        education[idx] = { ...education[idx], end_date: e.target.value };
-                        return { ...c, education };
-                      })
-                    }
-                  />
+                  <div className="space-y-1">
+                    <Label className="text-xs font-normal text-muted-foreground">
+                      Start date
+                    </Label>
+                    <Input
+                      type="month"
+                      value={edu.start_date}
+                      onChange={(e) =>
+                        setContent((c) => {
+                          const education = [...c.education];
+                          education[idx] = { ...education[idx], start_date: e.target.value };
+                          return { ...c, education };
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-normal text-muted-foreground">End date</Label>
+                    <Input
+                      type="month"
+                      value={edu.end_date}
+                      onChange={(e) =>
+                        setContent((c) => {
+                          const education = [...c.education];
+                          education[idx] = { ...education[idx], end_date: e.target.value };
+                          return { ...c, education };
+                        })
+                      }
+                    />
+                  </div>
                   <Input
                     className="sm:col-span-2"
                     placeholder="Notes (honors, GPA, coursework)"
@@ -810,30 +829,37 @@ export function ResumeEditor({
                       })
                     }
                   />
-                  <Input
-                    type="month"
-                    placeholder="Issued"
-                    value={cert.date}
-                    onChange={(e) =>
-                      setContent((c) => {
-                        const certifications = [...c.certifications];
-                        certifications[idx] = { ...certifications[idx], date: e.target.value };
-                        return { ...c, certifications };
-                      })
-                    }
-                  />
-                  <Input
-                    type="month"
-                    placeholder="Expires"
-                    value={cert.expiration}
-                    onChange={(e) =>
-                      setContent((c) => {
-                        const certifications = [...c.certifications];
-                        certifications[idx] = { ...certifications[idx], expiration: e.target.value };
-                        return { ...c, certifications };
-                      })
-                    }
-                  />
+                  <div className="space-y-1">
+                    <Label className="text-xs font-normal text-muted-foreground">Issued</Label>
+                    <Input
+                      type="month"
+                      value={cert.date}
+                      onChange={(e) =>
+                        setContent((c) => {
+                          const certifications = [...c.certifications];
+                          certifications[idx] = { ...certifications[idx], date: e.target.value };
+                          return { ...c, certifications };
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-normal text-muted-foreground">Expires</Label>
+                    <Input
+                      type="month"
+                      value={cert.expiration}
+                      onChange={(e) =>
+                        setContent((c) => {
+                          const certifications = [...c.certifications];
+                          certifications[idx] = {
+                            ...certifications[idx],
+                            expiration: e.target.value,
+                          };
+                          return { ...c, certifications };
+                        })
+                      }
+                    />
+                  </div>
                   <div className="sm:col-span-2 flex justify-end">
                     <Button
                       type="button"
