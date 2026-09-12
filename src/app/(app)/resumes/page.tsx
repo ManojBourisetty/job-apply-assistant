@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { FileText, Plus, Star } from "lucide-react";
+import { FileText, History, Plus, Star } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { PageHeader } from "@/components/page-header";
@@ -37,7 +37,7 @@ export default async function ResumesPage() {
         <div className="space-y-3">
           {resumes.map((resume) => (
             <Card key={resume.id}>
-              <CardContent className="flex items-center justify-between gap-4 pt-6">
+              <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-6">
                 <Link href={`/resumes/${resume.id}`} className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
                     <p className="font-medium">{resume.title}</p>
@@ -52,6 +52,11 @@ export default async function ResumesPage() {
                     version(s) · Updated {formatDate(resume.updated_at)}
                   </p>
                 </Link>
+                <Button variant="outline" size="sm" className="shrink-0" asChild>
+                  <Link href={`/resumes/${resume.id}?tab=history`}>
+                    <History /> Versions
+                  </Link>
+                </Button>
                 <ResumeRowActions resumeId={resume.id} isMaster={resume.is_master} />
               </CardContent>
             </Card>

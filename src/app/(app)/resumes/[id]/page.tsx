@@ -13,10 +13,13 @@ import { isAiConfigured } from "@/lib/ai";
 
 export default async function ResumeDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { id } = await params;
+  const { tab } = await searchParams;
   const supabase = await createClient();
 
   const { data: resume } = await supabase
@@ -57,7 +60,7 @@ export default async function ResumeDetailPage({
         }
       />
 
-      <Tabs defaultValue="editor">
+      <Tabs defaultValue={tab === "history" ? "history" : "editor"}>
         <TabsList>
           <TabsTrigger value="editor">Editor</TabsTrigger>
           <TabsTrigger value="history">Version history ({versions?.length ?? 0})</TabsTrigger>
