@@ -2,12 +2,13 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { History, RotateCcw, Loader2 } from "lucide-react";
+import { History, RotateCcw, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { restoreResumeVersion } from "@/lib/actions/resumes";
+import { ConfirmDialog } from "@/components/confirm-dialog";
+import { restoreResumeVersion, deleteResumeVersion } from "@/lib/actions/resumes";
 import { formatDate } from "@/lib/format";
 
 type Version = {
@@ -29,7 +30,12 @@ export function VersionHistory({
 }) {
   const router = useRouter();
   const [restoringId, setRestoringId] = React.useState<string | null>(null);
-  const [isPending, startTransition] = React.useTransition();
+  const [isRestorePending, startRestoreTransition] = React.useTransition();
+  const [deletingId, setDeletingId] = React.useState<string | null>(null);
+  const [isDeletePending, startDeleteTransition] = React.useTransition();
+  const [confirmTarget, setConfirmTarget] = React.useState<Version | null>(null);
+
+  const onlyOneVersion = versions.length <= 1;
 
   return (
     <div className="divide-y rounded-lg border">
@@ -52,34 +58,78 @@ export function VersionHistory({
               </p>
             </div>
           </div>
-          {v.id !== currentVersionId && (
+          <div className="flex shrink-0 items-center gap-2">
+            {v.id !== currentVersionId && (
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={isRestorePending && restoringId === v.id}
+                onClick={() => {
+                  setRestoringId(v.id);
+                  startRestoreTransition(async () => {
+                    try {
+                      await restoreResumeVersion(resumeId, v.id);
+                      toast.success(`Restored version ${v.version_number}`);
+                      router.refresh();
+                    } catch {
+                      toast.error("Couldn't restore version.");
+                    }
+                  });
+                }}
+              >
+                {isRestorePending && restoringId === v.id ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  <RotateCcw />
+                )}
+                Restore
+              </Button>
+            )}
             <Button
-              variant="outline"
-              size="sm"
-              disabled={isPending && restoringId === v.id}
-              onClick={() => {
-                setRestoringId(v.id);
-                startTransition(async () => {
-                  try {
-                    await restoreResumeVersion(resumeId, v.id);
-                    toast.success(`Restored version ${v.version_number}`);
-                    router.refresh();
-                  } catch {
-                    toast.error("Couldn't restore version.");
-                  }
-                });
-              }}
+              variant="ghost"
+              size="icon"
+              className="text-destructive"
+              disabled={onlyOneVersion || (isDeletePending && deletingId === v.id)}
+              title={onlyOneVersion ? "Every resume needs at least one version" : "Delete version"}
+              onClick={() => setConfirmTarget(v)}
             >
-              {isPending && restoringId === v.id ? (
+              {isDeletePending && deletingId === v.id ? (
                 <Loader2 className="animate-spin" />
               ) : (
-                <RotateCcw />
+                <Trash2 className="size-4" />
               )}
-              Restore
             </Button>
-          )}
+          </div>
         </div>
       ))}
+
+      <ConfirmDialog
+        open={confirmTarget !== null}
+        onOpenChange={(open) => !open && setConfirmTarget(null)}
+        title={`Delete version ${confirmTarget?.version_number}?`}
+        description={
+          confirmTarget?.id === currentVersionId
+            ? "This is your current version — deleting it restores the most recent remaining version automatically. This can't be undone."
+            : "This version's content will be permanently deleted. This can't be undone."
+        }
+        confirmLabel="Delete version"
+        isPending={isDeletePending}
+        onConfirm={() => {
+          if (!confirmTarget) return;
+          const target = confirmTarget;
+          setDeletingId(target.id);
+          startDeleteTransition(async () => {
+            try {
+              await deleteResumeVersion(resumeId, target.id);
+              toast.success(`Deleted version ${target.version_number}`);
+              setConfirmTarget(null);
+              router.refresh();
+            } catch (err) {
+              toast.error(err instanceof Error ? err.message : "Couldn't delete version.");
+            }
+          });
+        }}
+      />
     </div>
   );
 }
