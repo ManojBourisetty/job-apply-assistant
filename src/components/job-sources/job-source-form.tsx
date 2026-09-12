@@ -25,6 +25,8 @@ const PROVIDER_HINTS: Record<string, string> = {
   ashby: "The board token is the slug in jobs.ashbyhq.com/<token>",
   adzuna:
     "Enter a 2-letter country code (us, gb, ca, au, de, fr, in, nl, sg, za). Adzuna searches using the job titles from an active Job Search Profile, or your master resume's Target titles if you haven't set one up — add at least one first.",
+  workday:
+    "Paste the company's full Workday careers page URL, e.g. https://company.wd5.myworkdayjobs.com/en-US/CompanyCareers. Workday doesn't offer an official public API like the others, so this relies on the same internal endpoint the page itself uses — it can break if Workday changes that endpoint.",
 };
 
 export function JobSourceForm() {
@@ -32,6 +34,7 @@ export function JobSourceForm() {
   const [provider, setProvider] = React.useState("greenhouse");
   const [boardToken, setBoardToken] = React.useState("");
   const isAdzuna = provider === "adzuna";
+  const isWorkday = provider === "workday";
 
   function handleProviderChange(value: string) {
     setProvider(value);
@@ -66,15 +69,24 @@ export function JobSourceForm() {
                 <SelectItem value="lever">Lever</SelectItem>
                 <SelectItem value="ashby">Ashby</SelectItem>
                 <SelectItem value="adzuna">Adzuna (job title search)</SelectItem>
+                <SelectItem value="workday">Workday</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2 sm:col-span-2">
-            <Label htmlFor="board_token">{isAdzuna ? "Country code *" : "Board token *"}</Label>
+            <Label htmlFor="board_token">
+              {isAdzuna ? "Country code *" : isWorkday ? "Careers page URL *" : "Board token *"}
+            </Label>
             <Input
               id="board_token"
               name="board_token"
-              placeholder={isAdzuna ? "us" : "airbnb"}
+              placeholder={
+                isAdzuna
+                  ? "us"
+                  : isWorkday
+                    ? "https://company.wd5.myworkdayjobs.com/en-US/CompanyCareers"
+                    : "airbnb"
+              }
               value={boardToken}
               onChange={(e) => setBoardToken(e.target.value)}
               required

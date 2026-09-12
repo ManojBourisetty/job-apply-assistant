@@ -3,7 +3,9 @@ import { NextResponse } from "next/server";
 import { createAdminClient, isServiceRoleConfigured } from "@/lib/supabase/admin";
 import { performSourceSync } from "@/lib/job-sync";
 
-export const maxDuration = 300;
+// Conservative cap — the Hobby plan's ceiling is 60s; Pro/Enterprise allow
+// more but there's no reliable way to detect the plan at build time.
+export const maxDuration = 60;
 
 // Daily automated sync for every user's active job sources (Adzuna title
 // searches and ATS boards alike) — triggered by Vercel Cron (see

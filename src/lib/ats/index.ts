@@ -1,6 +1,7 @@
 import { fetchGreenhouseJobs } from "./greenhouse";
 import { fetchLeverJobs } from "./lever";
 import { fetchAshbyJobs } from "./ashby";
+import { fetchWorkdayJobs } from "./workday";
 import type { AtsProvider, NormalizedJob } from "./types";
 
 export { AtsFetchError } from "./types";
@@ -19,5 +20,7 @@ export async function fetchFromProvider(
       return fetchLeverJobs(boardToken);
     case "ashby":
       return fetchAshbyJobs(boardToken);
+    case "workday":
+      return fetchWorkdayJobs(boardToken);
   }
 }
