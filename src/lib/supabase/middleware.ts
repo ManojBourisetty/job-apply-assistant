@@ -4,6 +4,13 @@ import { NextResponse, type NextRequest } from "next/server";
 const PUBLIC_PATHS = ["/login", "/signup", "/auth", "/reset-password", "/terms"];
 
 export async function updateSession(request: NextRequest) {
+  // API routes own their own authorization (a bearer secret for the cron
+  // route, a session check inside server actions elsewhere) and expect a
+  // JSON/status-code response, not an HTML redirect to /login.
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    return NextResponse.next({ request });
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
