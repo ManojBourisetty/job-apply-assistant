@@ -24,7 +24,7 @@ const PROVIDER_HINTS: Record<string, string> = {
   lever: "The board token is the slug in jobs.lever.co/<token>",
   ashby: "The board token is the slug in jobs.ashbyhq.com/<token>",
   adzuna:
-    "Enter a 2-letter country code (us, gb, ca, au, de, fr, in, nl, sg, za). Adzuna searches using the job titles from an active Job Search Profile, or your master resume's Target titles if you haven't set one up — add at least one first.",
+    "Enter a 2-letter country code (us, gb, ca, au, de, fr, in, nl, sg, za). Add job titles below, or leave them blank to use your active Job Search Profile(s) or master resume's Target titles instead.",
   workday:
     "Paste the company's full Workday careers page URL, e.g. https://company.wd5.myworkdayjobs.com/en-US/CompanyCareers. Workday doesn't offer an official public API like the others, so this relies on the same internal endpoint the page itself uses — it can break if Workday changes that endpoint.",
 };
@@ -93,6 +93,16 @@ export function JobSourceForm() {
             />
             <p className="text-xs text-muted-foreground">{PROVIDER_HINTS[provider]}</p>
           </div>
+          {isAdzuna && (
+            <div className="space-y-2 sm:col-span-2">
+              <Label htmlFor="search_titles">Job titles to search (comma-separated, optional)</Label>
+              <Input
+                id="search_titles"
+                name="search_titles"
+                placeholder="Site Reliability Engineer, DevOps Engineer"
+              />
+            </div>
+          )}
           {state.error && <p className="text-sm text-destructive sm:col-span-2">{state.error}</p>}
           <div className="sm:col-span-2">
             <Button type="submit" disabled={isPending}>

@@ -9,11 +9,22 @@ import { performSourceSync, type SyncResult } from "@/lib/job-sync";
 
 export type ActionState = { error?: string; success?: string };
 
+function csv(value: FormDataEntryValue | null) {
+  if (typeof value !== "string" || !value.trim()) return [];
+  return value
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 const schema = z.object({
   name: z.string().min(1, "Name is required."),
   provider: z.enum(["greenhouse", "lever", "ashby", "adzuna", "workday"]),
   board_token: z.string().min(1, "Board token is required."),
 });
+
+const DUPLICATE_ERROR =
+  "You already have a source with this exact name and board token/country/URL — use a different display name if you want a separate source for the same target.";
 
 export async function createJobSource(
   _prevState: ActionState,
@@ -28,15 +39,49 @@ export async function createJobSource(
   } = await supabase.auth.getUser();
   if (!user) return { error: "Not authenticated." };
 
-  const { error } = await supabase.from("job_sources").insert({ ...parsed.data, user_id: user.id });
+  const search_titles = csv(formData.get("search_titles"));
+
+  const { error } = await supabase
+    .from("job_sources")
+    .insert({ ...parsed.data, search_titles, user_id: user.id });
 
   if (error) {
-    if (error.code === "23505") return { error: "You already have a source with this board token." };
+    if (error.code === "23505") return { error: DUPLICATE_ERROR };
     return { error: error.message };
   }
 
   revalidatePath("/jobs/sources");
   redirect("/jobs/sources");
+}
+
+const updateSchema = z.object({
+  name: z.string().min(1, "Name is required."),
+  board_token: z.string().min(1, "Board token is required."),
+});
+
+export async function updateJobSource(
+  sourceId: string,
+  _prevState: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const parsed = updateSchema.safeParse(Object.fromEntries(formData.entries()));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "Invalid input." };
+
+  const supabase = await createClient();
+  const search_titles = csv(formData.get("search_titles"));
+
+  const { error } = await supabase
+    .from("job_sources")
+    .update({ ...parsed.data, search_titles })
+    .eq("id", sourceId);
+
+  if (error) {
+    if (error.code === "23505") return { error: DUPLICATE_ERROR };
+    return { error: error.message };
+  }
+
+  revalidatePath("/jobs/sources");
+  return { success: "Source updated." };
 }
 
 export async function deleteJobSource(sourceId: string) {
