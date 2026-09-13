@@ -1,13 +1,14 @@
 "use client";
 
 import * as React from "react";
-import { RefreshCw, Trash2, Loader2, CheckCircle2, XCircle, CircleDashed } from "lucide-react";
+import { RefreshCw, Trash2, Pencil, Loader2, CheckCircle2, XCircle, CircleDashed } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { EditJobSourceDialog } from "@/components/job-sources/edit-job-source-dialog";
 import { deleteJobSource, syncJobSource, toggleJobSourceActive } from "@/lib/actions/job-sources";
 import { statusLabel, timeAgo } from "@/lib/format";
 import type { Tables } from "@/lib/supabase/database.types";
@@ -24,6 +25,7 @@ export function JobSourceRow({ source }: { source: Tables<"job_sources"> }) {
   const [, startToggle] = React.useTransition();
   const [deleting, startDelete] = React.useTransition();
   const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [editOpen, setEditOpen] = React.useState(false);
 
   const StatusIcon = STATUS_ICON[source.last_sync_status as keyof typeof STATUS_ICON] ?? CircleDashed;
 
@@ -95,6 +97,9 @@ export function JobSourceRow({ source }: { source: Tables<"job_sources"> }) {
           {syncing ? <Loader2 className="animate-spin" /> : <RefreshCw />}
           Sync now
         </Button>
+        <Button variant="ghost" size="icon" onClick={() => setEditOpen(true)}>
+          <Pencil className="size-4" />
+        </Button>
         <Button
           variant="ghost"
           size="icon"
@@ -104,6 +109,7 @@ export function JobSourceRow({ source }: { source: Tables<"job_sources"> }) {
           <Trash2 className="size-4" />
         </Button>
       </div>
+      <EditJobSourceDialog source={source} open={editOpen} onOpenChange={setEditOpen} />
       <ConfirmDialog
         open={confirmOpen}
         onOpenChange={setConfirmOpen}

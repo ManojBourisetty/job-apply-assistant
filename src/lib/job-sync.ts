@@ -46,21 +46,29 @@ export async function performSourceSync(
         );
       }
       const country = source.board_token;
-      const { data: profiles } = await supabase
-        .from("job_search_profiles")
-        .select("titles, locations")
-        .eq("user_id", userId)
-        .eq("is_active", true)
-        .limit(1);
-      const profile = profiles?.[0];
 
-      let titles: string[] = profile?.titles ?? [];
-      let where: string | undefined = profile?.locations[0];
+      // Titles configured directly on this source take priority — this is
+      // the most specific, intentional signal (e.g. two Adzuna/"us" sources
+      // for two different role searches). Falls back to every ACTIVE Job
+      // Search Profile (not just one: there's no rule limiting a user to a
+      // single active profile, so having e.g. both "DevOps" and "SRE"
+      // profiles active is valid and both should contribute titles — using
+      // only the first silently dropped the rest) and finally to the
+      // master resume's own "Target titles" field, since a user may have
+      // set one there without realizing Job Search Profiles is separate.
+      let titles: string[] = source.search_titles ?? [];
+      let where: string | undefined;
 
-      // No active Job Search Profile with titles set — fall back to the
-      // master resume's own "Target titles" field rather than blocking the
-      // sync, since a user may have set one there without realizing Job
-      // Search Profiles is a separate feature.
+      if (titles.length === 0) {
+        const { data: profiles } = await supabase
+          .from("job_search_profiles")
+          .select("titles, locations")
+          .eq("user_id", userId)
+          .eq("is_active", true);
+        titles = Array.from(new Set((profiles ?? []).flatMap((p) => p.titles)));
+        where = (profiles ?? []).find((p) => p.locations.length > 0)?.locations[0];
+      }
+
       if (titles.length === 0) {
         const { data: masterResume } = await supabase
           .from("resumes")
@@ -83,7 +91,7 @@ export async function performSourceSync(
 
       if (titles.length === 0) {
         throw new AtsFetchError(
-          "Add at least one target job title — either in an active Job Search Profile (Search Profiles page) or your master resume's \"Target titles\" field — before syncing Adzuna.",
+          "Add at least one target job title — on this source itself, in an active Job Search Profile (Search Profiles page), or your master resume's \"Target titles\" field — before syncing Adzuna.",
           "adzuna",
           source.board_token
         );
